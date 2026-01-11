@@ -12,6 +12,7 @@ fn main() {
     let solution: Box<dyn solutions::Solution> = match day {
         1 => Box::new(solutions::day01::Day01),
         2 => Box::new(solutions::day02::Day02),
+        3 => Box::new(solutions::day03::Day03),
         _ => panic!("Day {} not implemented", day),
     };
 
