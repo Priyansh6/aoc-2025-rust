@@ -7,7 +7,7 @@ fn main() {
 
     let input =
         fs::read_to_string(format!("inputs/day{:02}.txt", day)).expect("Input file not found");
-    let input = input.trim();
+    let input = input.trim_end_matches("\n");
 
     let solution: Box<dyn solutions::Solution> = match day {
         1 => Box::new(solutions::day01::Day01),
@@ -15,6 +15,7 @@ fn main() {
         3 => Box::new(solutions::day03::Day03),
         4 => Box::new(solutions::day04::Day04),
         5 => Box::new(solutions::day05::Day05),
+        6 => Box::new(solutions::day06::Day06),
         _ => panic!("Day {} not implemented", day),
     };
 
