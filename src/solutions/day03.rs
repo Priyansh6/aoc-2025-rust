@@ -2,8 +2,6 @@ use crate::solutions;
 use crate::utils;
 use std::cmp;
 
-pub struct Day03;
-
 fn propagate_max_and_set_next_to_zero(slice: &mut [u32], val: u32) {
     let len = slice.len();
     for i in 0..len - 1 {
@@ -36,6 +34,8 @@ fn solution(input: &str, num_batteries: usize) -> u64 {
     }
     sum
 }
+
+pub struct Day03;
 
 impl solutions::Solution for Day03 {
     fn part1(&self, input: &str) -> String {

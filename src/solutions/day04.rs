@@ -2,8 +2,6 @@ use crate::solutions;
 use crate::utils::grid::{Grid, GridPosition};
 use std::str;
 
-pub struct Day04;
-
 #[derive(PartialEq, Copy, Clone)]
 enum Square {
     Blank,
@@ -37,6 +35,8 @@ fn get_accessible_paper_positions(grid: &Grid<Square>) -> impl Iterator<Item = G
         is_accessible.then_some(pos)
     })
 }
+
+pub struct Day04;
 
 impl solutions::Solution for Day04 {
     fn part1(&self, input: &str) -> String {

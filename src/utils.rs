@@ -1,4 +1,5 @@
 pub mod grid;
+pub mod range;
 
 use std::fmt;
 use std::str;
