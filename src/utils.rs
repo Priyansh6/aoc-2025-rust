@@ -1,3 +1,5 @@
+pub mod grid;
+
 use std::fmt;
 use std::str;
 

@@ -13,6 +13,7 @@ fn main() {
         1 => Box::new(solutions::day01::Day01),
         2 => Box::new(solutions::day02::Day02),
         3 => Box::new(solutions::day03::Day03),
+        4 => Box::new(solutions::day04::Day04),
         _ => panic!("Day {} not implemented", day),
     };
 
