@@ -2,16 +2,16 @@ use std::fmt;
 use std::ops;
 use std::str;
 
+#[derive(PartialEq, Eq, Hash, Copy, Clone, Debug)]
+pub struct GridPosition {
+    pub row: usize,
+    pub col: usize,
+}
+
 pub struct Grid<T> {
     cells: Vec<Vec<T>>,
     height: usize,
     width: usize,
-}
-
-#[derive(PartialEq, Copy, Clone)]
-pub struct GridPosition {
-    pub row: usize,
-    pub col: usize,
 }
 
 impl<T> Grid<T> {
@@ -38,6 +38,56 @@ impl<T> Grid<T> {
             cells,
             width,
             height,
+        })
+    }
+
+    pub fn height(&self) -> usize {
+        self.height
+    }
+
+    pub fn width(&self) -> usize {
+        self.width
+    }
+
+    pub fn below(&self, pos: &GridPosition) -> Option<GridPosition> {
+        let new_row = pos.row + 1;
+        if new_row >= self.height {
+            return None;
+        }
+        Some(GridPosition {
+            row: new_row,
+            col: pos.col,
+        })
+    }
+
+    pub fn above(&self, pos: &GridPosition) -> Option<GridPosition> {
+        if pos.row == 0 {
+            return None;
+        }
+        Some(GridPosition {
+            row: pos.row - 1,
+            col: pos.col,
+        })
+    }
+
+    pub fn right(&self, pos: &GridPosition) -> Option<GridPosition> {
+        let new_col = pos.col + 1;
+        if new_col >= self.width {
+            return None;
+        }
+        Some(GridPosition {
+            row: pos.row,
+            col: new_col,
+        })
+    }
+
+    pub fn left(&self, pos: &GridPosition) -> Option<GridPosition> {
+        if pos.col == 0 {
+            return None;
+        }
+        Some(GridPosition {
+            row: pos.row,
+            col: pos.col - 1,
         })
     }
 
@@ -72,6 +122,22 @@ impl<T> Grid<T> {
                 None
             }
         })
+    }
+}
+
+impl<T: PartialEq> Grid<T> {
+    pub fn find(&self, elem: &T) -> Option<GridPosition> {
+        for (row_i, row) in self.cells.iter().enumerate() {
+            for (col_i, cell) in row.iter().enumerate() {
+                if elem == cell {
+                    return Some(GridPosition {
+                        row: row_i,
+                        col: col_i,
+                    });
+                }
+            }
+        }
+        None
     }
 }
 

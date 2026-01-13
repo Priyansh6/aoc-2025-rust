@@ -3,8 +3,6 @@ use crate::utils;
 use itertools::Itertools;
 use std::str;
 
-pub struct Day06;
-
 enum Operator {
     Add,
     Multiply,
@@ -28,6 +26,8 @@ impl str::FromStr for Operator {
         }
     }
 }
+
+pub struct Day06;
 
 impl solutions::Solution for Day06 {
     fn part1(&self, input: &str) -> String {
