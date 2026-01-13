@@ -15,16 +15,33 @@ impl str::FromStr for Operator {
         let chars: Vec<char> = s.chars().collect();
         if chars.len() != 1 {
             return Err(format!(
-                "Could not parse {} as an Operator, it is not a single character",
+                "Could not parse \"{}\" as an Operator, it is not a single character",
                 s
             ));
         }
         match chars[0] {
             '+' => Ok(Operator::Add),
             '*' => Ok(Operator::Multiply),
-            _ => Err(format!("Unknown operator {}", s)),
+            _ => Err(format!("Unknown operator \"{}\"", s)),
         }
     }
+}
+
+fn parse_operators(line: &str) -> Vec<Operator> {
+    line.split_whitespace()
+        .map(|op| op.parse().unwrap())
+        .collect()
+}
+
+fn calculate_sum(operators: &[Operator], num_groups: &[Vec<u64>]) -> u64 {
+    operators
+        .iter()
+        .zip_eq(num_groups)
+        .map(|(op, nums)| match op {
+            Operator::Add => nums.iter().sum::<u64>(),
+            Operator::Multiply => nums.iter().product::<u64>(),
+        })
+        .sum()
 }
 
 pub struct Day06;
@@ -32,12 +49,8 @@ pub struct Day06;
 impl solutions::Solution for Day06 {
     fn part1(&self, input: &str) -> String {
         let mut lines = input.lines();
-        let mut operators: Vec<Operator> = Vec::new();
-        if let Some(operators_line) = lines.next_back() {
-            for operator in operators_line.split_whitespace() {
-                operators.push(operator.parse().unwrap());
-            }
-        }
+        let operators = parse_operators(lines.next_back().unwrap());
+
         let num_grid: Vec<Vec<u64>> = lines
             .map(|l| {
                 l.split_whitespace()
@@ -45,31 +58,25 @@ impl solutions::Solution for Day06 {
                     .collect()
             })
             .collect();
-        let num_grid = utils::row_to_column_major(num_grid);
-        let mut sum = 0;
-        for (operator, nums) in operators.iter().zip_eq(&num_grid) {
-            sum += match operator {
-                Operator::Add => nums.iter().sum::<u64>(),
-                Operator::Multiply => nums.iter().product::<u64>(),
-            }
-        }
-        sum.to_string()
+        let num_groups = utils::row_to_column_major(num_grid);
+
+        calculate_sum(&operators, &num_groups).to_string()
     }
 
     fn part2(&self, input: &str) -> String {
         let mut lines = input.lines();
-        let mut operators: Vec<Operator> = Vec::new();
-        if let Some(operators_line) = lines.next_back() {
-            for operator in operators_line.split_whitespace() {
-                operators.push(operator.parse().unwrap());
-            }
-        }
+        let operators = parse_operators(lines.next_back().unwrap());
+
+        // Convert grid to column-major format as characters
         let col_major_char_grid: Vec<Vec<char>> =
             utils::row_to_column_major(lines.map(|line| line.chars().collect()).collect());
-        let problem_nums: Vec<Vec<u64>> = col_major_char_grid
+
+        // Group columns by empty spaces to form number groups
+        let num_groups: Vec<Vec<u64>> = col_major_char_grid
             .iter()
             .map(|col| col.iter().collect::<String>().trim().to_string())
             .batching(|it| {
+                // Take consecutive non-empty strings as one group
                 let nums = it
                     .take_while(|s| !s.is_empty())
                     .map(|s| s.parse().unwrap())
@@ -78,14 +85,7 @@ impl solutions::Solution for Day06 {
             })
             .collect();
 
-        let mut sum = 0;
-        for (operator, nums) in operators.iter().zip_eq(&problem_nums) {
-            sum += match operator {
-                Operator::Add => nums.iter().sum::<u64>(),
-                Operator::Multiply => nums.iter().product::<u64>(),
-            }
-        }
-        sum.to_string()
+        calculate_sum(&operators, &num_groups).to_string()
     }
 }
 
