@@ -1,12 +1,11 @@
-use crate::solutions;
+use crate::solutions::Solution;
 use crate::utils::range::Range;
-use std::str;
 
 type IdType = u64;
 
 pub struct Day05;
 
-impl solutions::Solution for Day05 {
+impl Solution for Day05 {
     fn part1(&self, input: &str) -> String {
         let mut input = input.split("\n\n").collect::<Vec<&str>>().into_iter();
         let ranges: Vec<Range<IdType>> = input

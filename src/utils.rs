@@ -1,5 +1,7 @@
+pub mod geometry;
 pub mod grid;
 pub mod range;
+pub mod union_find;
 
 use std::fmt;
 use std::str;

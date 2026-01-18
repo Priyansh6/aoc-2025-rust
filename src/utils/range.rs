@@ -1,6 +1,6 @@
 use std::cmp;
-use std::fmt;
-use std::str;
+use std::fmt::Display;
+use std::str::FromStr;
 
 pub struct Range<T> {
     pub start: T,
@@ -35,10 +35,10 @@ impl<T: Ord + Copy> Range<T> {
     }
 }
 
-impl<T> str::FromStr for Range<T>
+impl<T> FromStr for Range<T>
 where
-    T: str::FromStr,
-    T::Err: fmt::Display,
+    T: FromStr,
+    T::Err: Display,
 {
     type Err = String;
 

@@ -1,6 +1,6 @@
-use crate::solutions;
+use crate::solutions::Solution;
 use crate::utils::grid::{Grid, GridPosition};
-use std::str;
+use std::str::FromStr;
 
 #[derive(PartialEq, Copy, Clone)]
 enum Square {
@@ -8,7 +8,7 @@ enum Square {
     Paper,
 }
 
-impl str::FromStr for Square {
+impl FromStr for Square {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -23,32 +23,36 @@ impl str::FromStr for Square {
     }
 }
 
-fn get_accessible_paper_positions(grid: &Grid<Square>) -> impl Iterator<Item = GridPosition> {
-    grid.iter_enumerated().filter_map(|(pos, square)| {
-        let is_accessible = *square == Square::Paper
-            && grid
-                .surrounding_cells(pos)
-                .filter(|&cell| *cell == Square::Paper)
-                .count()
-                < 4;
-
-        is_accessible.then_some(pos)
-    })
-}
-
 pub struct Day04;
 
-impl solutions::Solution for Day04 {
+impl Day04 {
+    fn get_accessible_paper_positions(grid: &Grid<Square>) -> impl Iterator<Item = GridPosition> {
+        grid.iter_enumerated().filter_map(|(pos, square)| {
+            let is_accessible = *square == Square::Paper
+                && grid
+                    .surrounding_cells(pos)
+                    .filter(|&cell| *cell == Square::Paper)
+                    .count()
+                    < 4;
+
+            is_accessible.then_some(pos)
+        })
+    }
+}
+
+impl Solution for Day04 {
     fn part1(&self, input: &str) -> String {
         let grid: Grid<Square> = input.parse().unwrap();
-        get_accessible_paper_positions(&grid).count().to_string()
+        Day04::get_accessible_paper_positions(&grid)
+            .count()
+            .to_string()
     }
 
     fn part2(&self, input: &str) -> String {
         let mut grid: Grid<Square> = input.parse().unwrap();
         let mut total_accessible_squares = 0;
         while let accessible_square_positions =
-            get_accessible_paper_positions(&mut grid).collect::<Vec<GridPosition>>()
+            Day04::get_accessible_paper_positions(&mut grid).collect::<Vec<GridPosition>>()
             && accessible_square_positions.len() > 0
         {
             for &pos in &accessible_square_positions {

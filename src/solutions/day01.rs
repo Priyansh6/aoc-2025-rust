@@ -1,6 +1,6 @@
-use crate::solutions;
+use crate::solutions::Solution;
 use crate::utils;
-use std::str;
+use std::str::FromStr;
 
 const DIAL_NUMBERS: i32 = 100;
 const STARTING_NUMBER: i32 = 50;
@@ -16,7 +16,7 @@ struct DialAction {
     distance: i32,
 }
 
-impl str::FromStr for DialAction {
+impl FromStr for DialAction {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -41,7 +41,7 @@ impl str::FromStr for DialAction {
 
 pub struct Day01;
 
-impl solutions::Solution for Day01 {
+impl Solution for Day01 {
     fn part1(&self, input: &str) -> String {
         let mut result = 0;
         let mut curr = STARTING_NUMBER;

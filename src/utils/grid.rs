@@ -1,6 +1,8 @@
-use std::fmt;
-use std::ops;
-use std::str;
+#![allow(dead_code)]
+
+use std::fmt::Display;
+use std::ops::{Index, IndexMut};
+use std::str::FromStr;
 
 #[derive(PartialEq, Eq, Hash, Copy, Clone, Debug)]
 pub struct GridPosition {
@@ -141,7 +143,7 @@ impl<T: PartialEq> Grid<T> {
     }
 }
 
-impl<T> ops::Index<GridPosition> for Grid<T> {
+impl<T> Index<GridPosition> for Grid<T> {
     type Output = T;
 
     fn index(&self, pos: GridPosition) -> &Self::Output {
@@ -149,16 +151,16 @@ impl<T> ops::Index<GridPosition> for Grid<T> {
     }
 }
 
-impl<T> ops::IndexMut<GridPosition> for Grid<T> {
+impl<T> IndexMut<GridPosition> for Grid<T> {
     fn index_mut(&mut self, pos: GridPosition) -> &mut Self::Output {
         &mut self.cells[pos.row][pos.col]
     }
 }
 
-impl<T> str::FromStr for Grid<T>
+impl<T> FromStr for Grid<T>
 where
-    T: str::FromStr,
-    T::Err: fmt::Display,
+    T: FromStr,
+    T::Err: Display,
 {
     type Err = String;
 

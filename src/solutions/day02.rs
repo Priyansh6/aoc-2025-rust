@@ -1,47 +1,51 @@
-use crate::solutions;
+use crate::solutions::Solution;
 use crate::utils::range::Range;
-use std::str;
 
 type IdType = u64;
 
-fn is_id_invalid_part1(id: &IdType) -> bool {
-    let digits = id.ilog10() + 1;
-    if digits % 2 == 1 {
-        return false;
-    };
-
-    let id_str = id.to_string();
-    let (first_half, second_half) = id_str.split_at(id_str.len() / 2);
-    first_half == second_half
-}
-
-fn is_id_invalid_part2(id: &IdType) -> bool {
-    let digits = id.ilog10() + 1;
-
-    let id_str = id.to_string();
-    let chars: Vec<char> = id_str.chars().collect();
-    for size in (1..digits).filter(|&size| digits % size == 0) {
-        let chunks: Vec<String> = chars
-            .chunks(size as usize)
-            .map(|chunk| chunk.iter().collect())
-            .collect();
-        if chunks.windows(2).all(|w| w[0] == w[1]) {
-            return true;
-        }
-    }
-    false
-}
-
 pub struct Day02;
 
-impl solutions::Solution for Day02 {
+impl Day02 {
+    fn is_id_invalid_part1(id: &IdType) -> bool {
+        let digits = id.ilog10() + 1;
+        if digits % 2 == 1 {
+            return false;
+        };
+
+        let id_str = id.to_string();
+        let (first_half, second_half) = id_str.split_at(id_str.len() / 2);
+        first_half == second_half
+    }
+
+    fn is_id_invalid_part2(id: &IdType) -> bool {
+        let digits = id.ilog10() + 1;
+
+        let id_str = id.to_string();
+        let chars: Vec<char> = id_str.chars().collect();
+        for size in (1..digits).filter(|&size| digits % size == 0) {
+            let chunks: Vec<String> = chars
+                .chunks(size as usize)
+                .map(|chunk| chunk.iter().collect())
+                .collect();
+            if chunks.windows(2).all(|w| w[0] == w[1]) {
+                return true;
+            }
+        }
+        false
+    }
+}
+
+impl Solution for Day02 {
     fn part1(&self, input: &str) -> String {
         let ranges = input
             .split(",")
             .map(|r| r.parse::<Range<IdType>>().unwrap());
         let mut result = 0;
         for range in ranges {
-            result += range.iter().filter(is_id_invalid_part1).sum::<IdType>();
+            result += range
+                .iter()
+                .filter(Day02::is_id_invalid_part1)
+                .sum::<IdType>();
         }
         result.to_string()
     }
@@ -52,7 +56,10 @@ impl solutions::Solution for Day02 {
             .map(|r| r.parse::<Range<IdType>>().unwrap());
         let mut result = 0;
         for range in ranges {
-            result += range.iter().filter(is_id_invalid_part2).sum::<IdType>();
+            result += range
+                .iter()
+                .filter(Day02::is_id_invalid_part2)
+                .sum::<IdType>();
         }
         result.to_string()
     }

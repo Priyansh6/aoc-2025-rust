@@ -1,14 +1,14 @@
-use crate::solutions;
+use crate::solutions::Solution;
 use crate::utils;
 use itertools::Itertools;
-use std::str;
+use std::str::FromStr;
 
 enum Operator {
     Add,
     Multiply,
 }
 
-impl str::FromStr for Operator {
+impl FromStr for Operator {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -27,29 +27,31 @@ impl str::FromStr for Operator {
     }
 }
 
-fn parse_operators(line: &str) -> Vec<Operator> {
-    line.split_whitespace()
-        .map(|op| op.parse().unwrap())
-        .collect()
-}
-
-fn calculate_sum(operators: &[Operator], num_groups: &[Vec<u64>]) -> u64 {
-    operators
-        .iter()
-        .zip_eq(num_groups)
-        .map(|(op, nums)| match op {
-            Operator::Add => nums.iter().sum::<u64>(),
-            Operator::Multiply => nums.iter().product::<u64>(),
-        })
-        .sum()
-}
-
 pub struct Day06;
 
-impl solutions::Solution for Day06 {
+impl Day06 {
+    fn parse_operators(line: &str) -> Vec<Operator> {
+        line.split_whitespace()
+            .map(|op| op.parse().unwrap())
+            .collect()
+    }
+
+    fn calculate_sum(operators: &[Operator], num_groups: &[Vec<u64>]) -> u64 {
+        operators
+            .iter()
+            .zip_eq(num_groups)
+            .map(|(op, nums)| match op {
+                Operator::Add => nums.iter().sum::<u64>(),
+                Operator::Multiply => nums.iter().product::<u64>(),
+            })
+            .sum()
+    }
+}
+
+impl Solution for Day06 {
     fn part1(&self, input: &str) -> String {
         let mut lines = input.lines();
-        let operators = parse_operators(lines.next_back().unwrap());
+        let operators = Day06::parse_operators(lines.next_back().unwrap());
 
         let num_grid: Vec<Vec<u64>> = lines
             .map(|l| {
@@ -60,12 +62,12 @@ impl solutions::Solution for Day06 {
             .collect();
         let num_groups = utils::row_to_column_major(num_grid);
 
-        calculate_sum(&operators, &num_groups).to_string()
+        Day06::calculate_sum(&operators, &num_groups).to_string()
     }
 
     fn part2(&self, input: &str) -> String {
         let mut lines = input.lines();
-        let operators = parse_operators(lines.next_back().unwrap());
+        let operators = Day06::parse_operators(lines.next_back().unwrap());
 
         // Convert grid to column-major format as characters
         let col_major_char_grid: Vec<Vec<char>> =
@@ -85,7 +87,7 @@ impl solutions::Solution for Day06 {
             })
             .collect();
 
-        calculate_sum(&operators, &num_groups).to_string()
+        Day06::calculate_sum(&operators, &num_groups).to_string()
     }
 }
 
