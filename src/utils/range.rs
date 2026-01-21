@@ -2,6 +2,7 @@ use std::cmp;
 use std::fmt::Display;
 use std::str::FromStr;
 
+#[derive(Debug, Clone, Copy)]
 pub struct Range<T> {
     pub start: T,
     pub end: T,
@@ -32,6 +33,12 @@ impl<T: Ord + Copy> Range<T> {
     pub fn merge(&mut self, range: Range<T>) {
         self.start = cmp::min(self.start, range.start);
         self.end = cmp::max(self.end, range.end);
+    }
+
+    pub fn merged_with(mut self, range: Range<T>) -> Self {
+        self.start = cmp::min(self.start, range.start);
+        self.end = cmp::max(self.end, range.end);
+        self
     }
 }
 

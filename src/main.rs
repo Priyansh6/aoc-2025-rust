@@ -1,4 +1,4 @@
-use aoc_lib::solutions;
+use aoc_lib::solutions::{Day01, Day02, Day03, Day04, Day05, Day06, Day07, Day08, Day09, Solution};
 use std::fs;
 
 fn main() {
@@ -9,15 +9,16 @@ fn main() {
         fs::read_to_string(format!("inputs/day{:02}.txt", day)).expect("Input file not found");
     let input = input.trim_end_matches("\n");
 
-    let solution: Box<dyn solutions::Solution> = match day {
-        1 => Box::new(solutions::day01::Day01),
-        2 => Box::new(solutions::day02::Day02),
-        3 => Box::new(solutions::day03::Day03),
-        4 => Box::new(solutions::day04::Day04),
-        5 => Box::new(solutions::day05::Day05),
-        6 => Box::new(solutions::day06::Day06),
-        7 => Box::new(solutions::day07::Day07),
-        8 => Box::new(solutions::day08::Day08),
+    let solution: Box<dyn Solution> = match day {
+        1 => Box::new(Day01),
+        2 => Box::new(Day02),
+        3 => Box::new(Day03),
+        4 => Box::new(Day04),
+        5 => Box::new(Day05),
+        6 => Box::new(Day06),
+        7 => Box::new(Day07),
+        8 => Box::new(Day08),
+        9 => Box::new(Day09),
         _ => panic!("Day {} not implemented", day),
     };
 
