@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 
-use crate::utils::parser::{self, ParseError, Parser};
+use crate::utils::parser;
+use crate::utils::parser::{ParseError, Parser};
 use std::cmp;
 use std::fmt::Display;
 use std::str::FromStr;
