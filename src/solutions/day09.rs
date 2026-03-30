@@ -1,32 +1,11 @@
 use crate::solutions::Solution;
-use crate::utils::range::Range;
+use crate::utils::parser::{self, Parser};
 use itertools::Itertools;
-use std::str::FromStr;
 
 #[derive(Debug, Clone, Copy)]
 struct RedTile {
     row: u64,
     col: u64,
-}
-
-#[derive(Debug, Clone, Copy)]
-struct Rectangle {
-    min_row: u64,
-    min_col: u64,
-    max_row: u64,
-    max_col: u64,
-}
-
-#[derive(Debug, Clone, Copy)]
-struct VerticalWall {
-    col: u64,
-    row_range: Range<u64>,
-}
-
-#[derive(Debug, Clone, Copy)]
-struct HorizontalWall {
-    row: u64,
-    col_range: Range<u64>,
 }
 
 impl RedTile {
@@ -35,34 +14,15 @@ impl RedTile {
     }
 }
 
-impl FromStr for RedTile {
-    type Err = String;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut vals = s.split(',');
-        let col = vals
-            .next()
-            .ok_or(format!("Could not extract range from string: {}", s))?
-            .parse()
-            .map_err(|e| format!("Could not parse range, {}", e))?;
-        let row = vals
-            .next()
-            .ok_or(format!("Could not extract range from string: {}", s))?
-            .parse()
-            .map_err(|e| format!("Could not parse range, {}", e))?;
-
-        Ok(RedTile { row, col })
-    }
-}
-
 pub struct Day09;
 
 impl Solution for Day09 {
     fn part1(&self, input: &str) -> String {
-        let tiles = input
+        let tiles = parser::array(parser::as_type::<u64>, ",")
+            .map(|[row, col]| RedTile { row, col })
             .lines()
-            .map(|line| line.parse::<RedTile>().unwrap())
-            .collect_vec();
+            .parse(input)
+            .unwrap();
 
         tiles
             .iter()
@@ -74,46 +34,12 @@ impl Solution for Day09 {
     }
 
     fn part2(&self, input: &str) -> String {
-        let mut tiles = input
+        let tiles = parser::array(parser::as_type::<u64>, ",")
+            .map(|[row, col]| RedTile { row, col })
             .lines()
-            .map(|line| line.parse::<RedTile>().unwrap())
-            .collect_vec();
+            .parse(input)
+            .unwrap();
 
-        let mut vertical_walls = Vec::new();
-        let mut horizontal_walls = Vec::new();
-        for (t1, t2) in tiles.iter().circular_tuple_windows() {
-            if t1.row == t2.row {
-                horizontal_walls.push(HorizontalWall {
-                    row: t1.row,
-                    col_range: Range {
-                        start: t1.col,
-                        end: t2.col,
-                    },
-                });
-            }
-            if t1.col == t2.col {
-                vertical_walls.push(VerticalWall {
-                    col: t1.col,
-                    row_range: Range {
-                        start: t1.row,
-                        end: t2.row,
-                    },
-                });
-            }
-        }
-        vertical_walls.sort_by_key(|wall| wall.col);
-        horizontal_walls.sort_by_key(|wall| wall.row);
-        let vertical_walls = vertical_walls
-            .chunk_by(|w1, w2| w1.col == w2.col && w1.row_range.overlaps_with(&w2.row_range))
-            .map(|chunk| {
-                chunk.into_iter().cloned().reduce(|r1, r2| VerticalWall {
-                    col: r1.col,
-                    row_range: r1.row_range.merged_with(r2.row_range),
-                })
-            })
-            .filter(Option::is_some);
-
-        for wall in vertical_walls {}
         todo!()
     }
 }

@@ -1,3 +1,6 @@
+#![allow(dead_code)]
+
+use crate::utils::parser::{self, ParseError, Parser};
 use std::cmp;
 use std::fmt::Display;
 use std::str::FromStr;
@@ -47,21 +50,11 @@ where
     T: FromStr,
     T::Err: Display,
 {
-    type Err = String;
+    type Err = ParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut vals = s.split('-');
-        let start = vals
-            .next()
-            .ok_or(format!("Could not extract range from string: {}", s))?
-            .parse::<T>()
-            .map_err(|e| format!("Could not parse range, {}", e))?;
-        let end = vals
-            .next()
-            .ok_or(format!("Could not extract range from string: {}", s))?
-            .parse::<T>()
-            .map_err(|e| format!("Could not parse range, {}", e))?;
-
-        Ok(Range { start, end })
+        parser::array(parser::as_type::<T>, "-")
+            .map(|[start, end]| Range { start, end })
+            .parse(s)
     }
 }

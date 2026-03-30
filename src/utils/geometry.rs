@@ -1,6 +1,8 @@
 #![allow(dead_code)]
 
+use crate::utils::parser::{self, ParseError, Parser};
 use itertools::Itertools;
+use std::fmt::Display;
 use std::str::FromStr;
 
 pub type Vector3<T> = Vector<T, 3>;
@@ -16,17 +18,17 @@ impl<T, const N: usize> Vector<T, N> {
     }
 }
 
-impl FromStr for Vector3<f64> {
-    type Err = String;
+impl<T, const N: usize> FromStr for Vector<T, N>
+where
+    T: FromStr,
+    T::Err: Display,
+{
+    type Err = ParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        s.split(',')
-            .map(|d| d.trim().parse::<f64>())
-            .try_collect::<_, Vec<_>, _>()
-            .map_err(|e| e.to_string())?
-            .try_into()
-            .map(Vector3::new)
-            .map_err(|v: Vec<_>| format!("Expected 3 values, got {}", v.len()))
+        parser::array(parser::as_type, ",")
+            .map(Vector::new)
+            .parse(s)
     }
 }
 

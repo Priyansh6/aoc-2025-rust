@@ -1,6 +1,6 @@
 use crate::solutions::Solution;
-use crate::utils;
-use std::str::FromStr;
+use crate::utils::parser;
+use crate::utils::parser::{char_match, ParseError, Parser};
 
 const DIAL_NUMBERS: i32 = 100;
 const STARTING_NUMBER: i32 = 50;
@@ -16,36 +16,28 @@ struct DialAction {
     distance: i32,
 }
 
-impl FromStr for DialAction {
-    type Err = String;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut chars = s.chars();
-        let direction = chars.next().ok_or(format!("Invalid direction: {}", s))?;
-        let direction = match direction {
-            'L' => Direction::Left,
-            'R' => Direction::Right,
-            _ => return Err(format!("Invalid direction: {}", s)),
-        };
-        let distance: i32 = chars
-            .as_str()
-            .parse()
-            .map_err(|e| format!("Invalid distance, {}", e))?;
-
-        Ok(DialAction {
+fn parse_actions(input: &str) -> Result<Vec<DialAction>, ParseError> {
+    let parse_direction = char_match! {
+        'L' => Direction::Left,
+        'R' => Direction::Right,
+    };
+    parser::uncons(parse_direction, parser::as_type::<i32>)
+        .map(|(direction, distance)| DialAction {
             direction,
             distance,
         })
-    }
+        .lines()
+        .parse(input)
 }
 
 pub struct Day01;
 
 impl Solution for Day01 {
     fn part1(&self, input: &str) -> String {
+        let actions = parse_actions(input).unwrap();
         let mut result = 0;
         let mut curr = STARTING_NUMBER;
-        for action in utils::parse_lines::<DialAction>(input) {
+        for action in actions {
             match action.direction {
                 Direction::Right => curr += action.distance,
                 Direction::Left => curr -= action.distance,
@@ -60,11 +52,11 @@ impl Solution for Day01 {
     }
 
     fn part2(&self, input: &str) -> String {
+        let actions = parse_actions(input).unwrap();
         let mut result = 0;
-
         let mut curr = STARTING_NUMBER;
         let mut was_zero = false;
-        for action in utils::parse_lines::<DialAction>(input) {
+        for action in actions {
             match action.direction {
                 Direction::Right => curr += action.distance,
                 Direction::Left => curr -= action.distance,

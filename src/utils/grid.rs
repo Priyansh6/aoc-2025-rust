@@ -1,8 +1,7 @@
 #![allow(dead_code)]
 
-use std::fmt::Display;
+use crate::utils::parser::{CharParser, ParseError, Parser};
 use std::ops::{Index, IndexMut};
-use std::str::FromStr;
 
 #[derive(PartialEq, Eq, Hash, Copy, Clone, Debug)]
 pub struct GridPosition {
@@ -17,7 +16,7 @@ pub struct Grid<T> {
 }
 
 impl<T> Grid<T> {
-    fn from_rows<I, J>(rows: I) -> Result<Self, String>
+    fn from_rows<I, J>(rows: I) -> Result<Self, ParseError>
     where
         I: IntoIterator<Item = J>,
         J: IntoIterator<Item = T>,
@@ -29,11 +28,11 @@ impl<T> Grid<T> {
 
         let height = cells.len();
         if height == 0 {
-            return Err("Grid cannot have height 0".to_string());
+            return Err("Grid cannot have height 0".to_string().into());
         }
         let width = cells.first().unwrap().len();
         if width == 0 {
-            return Err("Grid cannot have width 0".to_string());
+            return Err("Grid cannot have width 0".to_string().into());
         }
 
         Ok(Self {
@@ -41,6 +40,10 @@ impl<T> Grid<T> {
             width,
             height,
         })
+    }
+
+    pub fn parser(cell: impl CharParser<T>) -> impl Parser<Grid<T>> {
+        cell.char_list().lines().and_then(Grid::from_rows)
     }
 
     pub fn height(&self) -> usize {
@@ -154,30 +157,5 @@ impl<T> Index<GridPosition> for Grid<T> {
 impl<T> IndexMut<GridPosition> for Grid<T> {
     fn index_mut(&mut self, pos: GridPosition) -> &mut Self::Output {
         &mut self.cells[pos.row][pos.col]
-    }
-}
-
-impl<T> FromStr for Grid<T>
-where
-    T: FromStr,
-    T::Err: Display,
-{
-    type Err = String;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let rows: Result<Vec<Vec<T>>, String> = s
-            .lines()
-            .map(|line| {
-                line.chars()
-                    .map(|c| {
-                        c.to_string()
-                            .parse::<T>()
-                            .map_err(|e| format!("Parse grid error: {}", e))
-                    })
-                    .collect()
-            })
-            .collect();
-
-        Grid::from_rows(rows?)
     }
 }

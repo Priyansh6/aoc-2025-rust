@@ -1,77 +1,55 @@
 use crate::solutions::Solution;
 use crate::utils;
+use crate::utils::parser;
+use crate::utils::parser::{char_match, CharParser, ParseError, Parser};
 use itertools::Itertools;
-use std::str::FromStr;
 
 enum Operator {
     Add,
     Multiply,
 }
 
-impl FromStr for Operator {
-    type Err = String;
+fn parse_operator(c: char) -> Result<Operator, ParseError> {
+    (char_match! {
+        '+' => Operator::Add,
+        '*' => Operator::Multiply,
+    })(c)
+}
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let chars: Vec<char> = s.chars().collect();
-        if chars.len() != 1 {
-            return Err(format!(
-                "Could not parse \"{}\" as an Operator, it is not a single character",
-                s
-            ));
-        }
-        match chars[0] {
-            '+' => Ok(Operator::Add),
-            '*' => Ok(Operator::Multiply),
-            _ => Err(format!("Unknown operator \"{}\"", s)),
-        }
-    }
+fn calculate_sum(operators: &[Operator], num_groups: &[Vec<u64>]) -> u64 {
+    operators
+        .iter()
+        .zip_eq(num_groups)
+        .map(|(op, nums)| match op {
+            Operator::Add => nums.iter().sum::<u64>(),
+            Operator::Multiply => nums.iter().product::<u64>(),
+        })
+        .sum()
 }
 
 pub struct Day06;
 
-impl Day06 {
-    fn parse_operators(line: &str) -> Vec<Operator> {
-        line.split_whitespace()
-            .map(|op| op.parse().unwrap())
-            .collect()
-    }
-
-    fn calculate_sum(operators: &[Operator], num_groups: &[Vec<u64>]) -> u64 {
-        operators
-            .iter()
-            .zip_eq(num_groups)
-            .map(|(op, nums)| match op {
-                Operator::Add => nums.iter().sum::<u64>(),
-                Operator::Multiply => nums.iter().product::<u64>(),
-            })
-            .sum()
-    }
-}
-
 impl Solution for Day06 {
     fn part1(&self, input: &str) -> String {
-        let mut lines = input.lines();
-        let operators = Day06::parse_operators(lines.next_back().unwrap());
+        let num_grid_parser = parser::as_type::<u64>.split_whitespace().lines();
+        let operators_parser = parse_operator.into_parser().split_whitespace();
+        let (num_grid, operators) = parser::rsplit_once(num_grid_parser, operators_parser, "\n")
+            .parse(input)
+            .unwrap();
 
-        let num_grid: Vec<Vec<u64>> = lines
-            .map(|l| {
-                l.split_whitespace()
-                    .map(|num| num.parse().unwrap())
-                    .collect()
-            })
-            .collect();
         let num_groups = utils::row_to_column_major(num_grid);
-
-        Day06::calculate_sum(&operators, &num_groups).to_string()
+        calculate_sum(&operators, &num_groups).to_string()
     }
 
     fn part2(&self, input: &str) -> String {
-        let mut lines = input.lines();
-        let operators = Day06::parse_operators(lines.next_back().unwrap());
+        let char_grid_parser = parser::identity.char_list().lines();
+        let operators_parser = parse_operator.into_parser().split_whitespace();
+        let (char_grid, operators) = parser::rsplit_once(char_grid_parser, operators_parser, "\n")
+            .parse(input)
+            .unwrap();
 
         // Convert grid to column-major format as characters
-        let col_major_char_grid: Vec<Vec<char>> =
-            utils::row_to_column_major(lines.map(|line| line.chars().collect()).collect());
+        let col_major_char_grid: Vec<Vec<char>> = utils::row_to_column_major(char_grid);
 
         // Group columns by empty spaces to form number groups
         let num_groups: Vec<Vec<u64>> = col_major_char_grid
@@ -87,7 +65,7 @@ impl Solution for Day06 {
             })
             .collect();
 
-        Day06::calculate_sum(&operators, &num_groups).to_string()
+        calculate_sum(&operators, &num_groups).to_string()
     }
 }
 

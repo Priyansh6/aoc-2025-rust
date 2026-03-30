@@ -1,4 +1,6 @@
 use crate::solutions::Solution;
+use crate::utils::parser;
+use crate::utils::parser::Parser;
 use crate::utils::range::Range;
 
 type IdType = u64;
@@ -7,19 +9,11 @@ pub struct Day05;
 
 impl Solution for Day05 {
     fn part1(&self, input: &str) -> String {
-        let mut input = input.split("\n\n").collect::<Vec<&str>>().into_iter();
-        let ranges: Vec<Range<IdType>> = input
-            .next()
-            .unwrap()
-            .lines()
-            .map(|line| line.parse().unwrap())
-            .collect();
-        let ids: Vec<IdType> = input
-            .next()
-            .unwrap()
-            .lines()
-            .map(|line| line.parse().unwrap())
-            .collect();
+        let range_parser = parser::as_type::<Range<IdType>>.lines();
+        let id_parser = parser::as_type::<IdType>.lines();
+        let (ranges, ids) = parser::pair(range_parser, id_parser, "\n\n")
+            .parse(input)
+            .unwrap();
         let mut fresh_ids = 0;
         for &id in &ids {
             for range in &ranges {
@@ -33,13 +27,10 @@ impl Solution for Day05 {
     }
 
     fn part2(&self, input: &str) -> String {
-        let mut ranges: Vec<Range<IdType>> = input
-            .split("\n\n")
-            .next()
-            .unwrap()
-            .lines()
-            .map(|line| line.parse().unwrap())
-            .collect();
+        let range_parser = parser::as_type::<Range<IdType>>.lines();
+        let (mut ranges, _) = parser::pair(range_parser, parser::unit, "\n\n")
+            .parse(input)
+            .unwrap();
         ranges.sort_by_key(|range| range.start);
 
         let mut merged_ranges: Vec<Range<IdType>> = Vec::new();

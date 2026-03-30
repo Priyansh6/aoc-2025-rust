@@ -1,47 +1,39 @@
 use crate::solutions::Solution;
 use crate::utils::geometry::{self, Point3};
+use crate::utils::parser;
+use crate::utils::parser::Parser;
 use crate::utils::union_find::UnionFind;
 use itertools::Itertools;
 
 const NUM_CONNECTIONS_PART_1: usize = 1000;
 
-pub struct Day08;
-
-impl Day08 {
-    fn largest_3_connection_groups_product(input: &str, num_connections: usize) -> usize {
-        let points = input
-            .lines()
-            .map(|l| l.parse::<Point3<f64>>().unwrap())
-            .collect_vec();
-
-        let pairs = geometry::k_closest_pair_indices(&points, num_connections);
-        let mut union_find = UnionFind::new(points.len());
-        for (left, right) in pairs {
-            union_find.union(left, right);
-        }
-
-        (0..points.len())
-            .map(|i| union_find.find(i))
-            .unique()
-            .collect::<Vec<_>>()
-            .into_iter()
-            .map(|root| union_find.get_size(root))
-            .k_largest(3)
-            .product::<usize>()
+fn largest_3_connection_groups_product(input: &str, num_connections: usize) -> usize {
+    let points = parser::as_type::<Point3<f64>>.lines().parse(input).unwrap();
+    let pairs = geometry::k_closest_pair_indices(&points, num_connections);
+    let mut union_find = UnionFind::new(points.len());
+    for (left, right) in pairs {
+        union_find.union(left, right);
     }
+
+    (0..points.len())
+        .map(|i| union_find.find(i))
+        .unique()
+        .collect::<Vec<_>>()
+        .into_iter()
+        .map(|root| union_find.get_size(root))
+        .k_largest(3)
+        .product::<usize>()
 }
+
+pub struct Day08;
 
 impl Solution for Day08 {
     fn part1(&self, input: &str) -> String {
-        Day08::largest_3_connection_groups_product(input, NUM_CONNECTIONS_PART_1).to_string()
+        largest_3_connection_groups_product(input, NUM_CONNECTIONS_PART_1).to_string()
     }
 
     fn part2(&self, input: &str) -> String {
-        let points = input
-            .lines()
-            .map(|l| l.parse::<Point3<f64>>().unwrap())
-            .collect_vec();
-
+        let points = parser::as_type::<Point3<f64>>.lines().parse(input).unwrap();
         let pairs = geometry::closest_pair_indices(&points);
         let mut union_find = UnionFind::new(points.len());
 
@@ -83,10 +75,7 @@ mod tests {
 
     #[test]
     fn test_part1() {
-        assert_eq!(
-            Day08::largest_3_connection_groups_product(TEST_INPUT, 10),
-            40
-        );
+        assert_eq!(largest_3_connection_groups_product(TEST_INPUT, 10), 40);
     }
 
     #[test]
