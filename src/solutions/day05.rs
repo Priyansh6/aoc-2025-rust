@@ -5,18 +5,21 @@ use crate::utils::range::Range;
 
 type IdType = u64;
 
-pub struct Day05;
+pub struct Sol;
 
-impl Solution for Day05 {
-    fn part1(&self, input: &str) -> String {
+impl Solution for Sol {
+    type Parsed = (Vec<Range<IdType>>, Vec<IdType>);
+
+    fn parser(&self) -> impl Parser<Self::Parsed> {
         let range_parser = parser::as_type::<Range<IdType>>.lines();
         let id_parser = parser::as_type::<IdType>.lines();
-        let (ranges, ids) = parser::pair(range_parser, id_parser, "\n\n")
-            .parse(input)
-            .unwrap();
+        parser::pair(range_parser, id_parser, "\n\n")
+    }
+
+    fn part1(&self, (ranges, ids): &Self::Parsed) -> String {
         let mut fresh_ids = 0;
-        for &id in &ids {
-            for range in &ranges {
+        for id in ids {
+            for range in ranges {
                 if range.contains(id) {
                     fresh_ids += 1;
                     break;
@@ -26,11 +29,8 @@ impl Solution for Day05 {
         fresh_ids.to_string()
     }
 
-    fn part2(&self, input: &str) -> String {
-        let range_parser = parser::as_type::<Range<IdType>>.lines();
-        let (mut ranges, _) = parser::pair(range_parser, parser::unit, "\n\n")
-            .parse(input)
-            .unwrap();
+    fn part2(&self, (ranges, _): &Self::Parsed) -> String {
+        let mut ranges = ranges.clone();
         ranges.sort_by_key(|range| range.start);
 
         let mut merged_ranges: Vec<Range<IdType>> = Vec::new();
@@ -56,7 +56,7 @@ impl Solution for Day05 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::solutions::Solution;
+    use crate::solutions::{check_part1, check_part2};
 
     const TEST_INPUT: &str = "3-5
 10-14
@@ -72,11 +72,11 @@ mod tests {
 
     #[test]
     fn test_part1() {
-        assert_eq!(Day05.part1(TEST_INPUT), "3");
+        check_part1(&Sol, TEST_INPUT, "3");
     }
 
     #[test]
     fn test_part2() {
-        assert_eq!(Day05.part2(TEST_INPUT), "14");
+        check_part2(&Sol, TEST_INPUT, "14");
     }
 }

@@ -1,6 +1,6 @@
 use crate::solutions::Solution;
 use crate::utils::parser;
-use crate::utils::parser::{char_match, ParseError, Parser};
+use crate::utils::parser::{char_match, Parser};
 
 const DIAL_NUMBERS: i32 = 100;
 const STARTING_NUMBER: i32 = 50;
@@ -11,30 +11,30 @@ enum Direction {
     Right,
 }
 
-struct DialAction {
+pub struct DialAction {
     direction: Direction,
     distance: i32,
 }
 
-fn parse_actions(input: &str) -> Result<Vec<DialAction>, ParseError> {
-    let parse_direction = char_match! {
-        'L' => Direction::Left,
-        'R' => Direction::Right,
-    };
-    parser::uncons(parse_direction, parser::as_type::<i32>)
-        .map(|(direction, distance)| DialAction {
-            direction,
-            distance,
-        })
-        .lines()
-        .parse(input)
-}
+pub struct Sol;
 
-pub struct Day01;
+impl Solution for Sol {
+    type Parsed = Vec<DialAction>;
 
-impl Solution for Day01 {
-    fn part1(&self, input: &str) -> String {
-        let actions = parse_actions(input).unwrap();
+    fn parser(&self) -> impl Parser<Self::Parsed> {
+        let parse_direction = char_match! {
+            'L' => Direction::Left,
+            'R' => Direction::Right,
+        };
+        parser::uncons(parse_direction, parser::as_type::<i32>)
+            .map(|(direction, distance)| DialAction {
+                direction,
+                distance,
+            })
+            .lines()
+    }
+
+    fn part1(&self, actions: &Self::Parsed) -> String {
         let mut result = 0;
         let mut curr = STARTING_NUMBER;
         for action in actions {
@@ -51,8 +51,7 @@ impl Solution for Day01 {
         result.to_string()
     }
 
-    fn part2(&self, input: &str) -> String {
-        let actions = parse_actions(input).unwrap();
+    fn part2(&self, actions: &Self::Parsed) -> String {
         let mut result = 0;
         let mut curr = STARTING_NUMBER;
         let mut was_zero = false;
@@ -81,7 +80,7 @@ impl Solution for Day01 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::solutions::Solution;
+    use crate::solutions::{check_part1, check_part2};
 
     const TEST_INPUT: &str = "L68
 L30
@@ -96,11 +95,11 @@ L82";
 
     #[test]
     fn test_part1() {
-        assert_eq!(Day01.part1(TEST_INPUT), "3");
+        check_part1(&Sol, TEST_INPUT, "3");
     }
 
     #[test]
     fn test_part2() {
-        assert_eq!(Day01.part2(TEST_INPUT), "6");
+        check_part2(&Sol, TEST_INPUT, "6");
     }
 }

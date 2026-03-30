@@ -23,8 +23,8 @@ impl Range<u64> {
 }
 
 impl<T: PartialOrd> Range<T> {
-    pub fn contains(&self, x: T) -> bool {
-        self.start <= x && x <= self.end
+    pub fn contains(&self, x: &T) -> bool {
+        &self.start <= x && x <= &self.end
     }
 
     pub fn overlaps_with(&self, range: &Range<T>) -> bool {

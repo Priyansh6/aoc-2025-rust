@@ -9,6 +9,7 @@ pub struct GridPosition {
     pub col: usize,
 }
 
+#[derive(Clone)]
 pub struct Grid<T> {
     cells: Vec<Vec<T>>,
     height: usize,

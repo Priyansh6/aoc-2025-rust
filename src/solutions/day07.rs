@@ -1,23 +1,14 @@
 use crate::solutions::Solution;
 use crate::utils::grid::{Grid, GridPosition};
-use crate::utils::parser::{char_match, ParseError, Parser};
+use crate::utils::parser::{char_match, Parser};
 use std::collections::{HashMap, HashSet};
 
 #[derive(PartialEq, Copy, Clone)]
-enum Square {
+pub enum Square {
     Blank,
     Source,
     Splitter,
     Beam,
-}
-
-fn parse_square(c: char) -> Result<Square, ParseError> {
-    (char_match! {
-        '.' => Square::Blank,
-        'S' => Square::Source,
-        '^' => Square::Splitter,
-        '|' => Square::Beam,
-    })(c)
 }
 
 fn insert_beam(beams: &mut HashMap<GridPosition, u64>, pos: GridPosition, possibilities: u64) {
@@ -78,11 +69,22 @@ fn move_beam_down_part2(
     }
 }
 
-pub struct Day07;
+pub struct Sol;
 
-impl Solution for Day07 {
-    fn part1(&self, input: &str) -> String {
-        let manifold: Grid<Square> = Grid::parser(parse_square).parse(input).unwrap();
+impl Solution for Sol {
+    type Parsed = Grid<Square>;
+
+    fn parser(&self) -> impl Parser<Self::Parsed> {
+        let parse_square = char_match! {
+            '.' => Square::Blank,
+            'S' => Square::Source,
+            '^' => Square::Splitter,
+            '|' => Square::Beam,
+        };
+        Grid::parser(parse_square)
+    }
+
+    fn part1(&self, manifold: &Self::Parsed) -> String {
         let source_pos = manifold.find(&Square::Source).unwrap();
 
         let mut beam_pos = HashSet::from([source_pos]);
@@ -97,8 +99,7 @@ impl Solution for Day07 {
         collisions.to_string()
     }
 
-    fn part2(&self, input: &str) -> String {
-        let manifold: Grid<Square> = Grid::parser(parse_square).parse(input).unwrap();
+    fn part2(&self, manifold: &Self::Parsed) -> String {
         let source_pos = manifold.find(&Square::Source).unwrap();
 
         let mut beam_possibilities = HashMap::from([(source_pos, 1)]);
@@ -116,7 +117,7 @@ impl Solution for Day07 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::solutions::Solution;
+    use crate::solutions::{check_part1, check_part2};
 
     const TEST_INPUT: &str = ".......S.......
 ...............
@@ -137,11 +138,11 @@ mod tests {
 
     #[test]
     fn test_part1() {
-        assert_eq!(Day07.part1(TEST_INPUT), "21");
+        check_part1(&Sol, TEST_INPUT, "21");
     }
 
     #[test]
     fn test_part2() {
-        assert_eq!(Day07.part2(TEST_INPUT), "40");
+        check_part2(&Sol, TEST_INPUT, "40");
     }
 }

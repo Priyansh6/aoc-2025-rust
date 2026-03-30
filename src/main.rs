@@ -1,5 +1,20 @@
-use aoc_lib::solutions::{Day01, Day02, Day03, Day04, Day05, Day06, Day07, Day08, Day09, Solution};
+use aoc_lib::solutions::{day01, day02, day03, day04, day05, day06, day07, day08, day09, Solution};
+use aoc_lib::utils::parser::Parser;
 use std::fs;
+
+macro_rules! run_day {
+    ($day:expr, $input:expr, $($num:literal => $sol:expr),+ $(,)?) => {
+        match $day {
+            $($num => {
+                let s = $sol;
+                let parsed = s.parser().parse($input).expect("Parse failed");
+                println!("Part 1: {}", s.part1(&parsed));
+                println!("Part 2: {}", s.part2(&parsed));
+            })+
+            _ => panic!("Day {} not implemented", $day),
+        }
+    };
+}
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
@@ -9,19 +24,15 @@ fn main() {
         fs::read_to_string(format!("inputs/day{:02}.txt", day)).expect("Input file not found");
     let input = input.trim_end_matches("\n");
 
-    let solution: Box<dyn Solution> = match day {
-        1 => Box::new(Day01),
-        2 => Box::new(Day02),
-        3 => Box::new(Day03),
-        4 => Box::new(Day04),
-        5 => Box::new(Day05),
-        6 => Box::new(Day06),
-        7 => Box::new(Day07),
-        8 => Box::new(Day08),
-        9 => Box::new(Day09),
-        _ => panic!("Day {} not implemented", day),
-    };
-
-    println!("Part 1 Solution: {}", solution.part1(&input));
-    println!("Part 2 Solution: {}", solution.part2(&input));
+    run_day!(&day, &input,
+        1 => day01::Sol,
+        2 => day02::Sol,
+        3 => day03::Sol,
+        4 => day04::Sol,
+        5 => day05::Sol,
+        6 => day06::Sol,
+        7 => day07::Sol,
+        8 => day08::Sol::<{ day08::NUM_CONNECTIONS_PART_1 }>,
+        9 => day09::Sol,
+    );
 }

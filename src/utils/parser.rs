@@ -103,7 +103,11 @@ macro_rules! char_match {
 }
 pub(crate) use char_match;
 
-pub fn identity(c: char) -> Result<char, ParseError> {
+pub fn as_string(s: &str) -> Result<String, ParseError> {
+    Ok(s.to_string())
+}
+
+pub fn char_identity(c: char) -> Result<char, ParseError> {
     Ok(c)
 }
 

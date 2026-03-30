@@ -5,36 +5,37 @@ use crate::utils::parser::Parser;
 use crate::utils::union_find::UnionFind;
 use itertools::Itertools;
 
-const NUM_CONNECTIONS_PART_1: usize = 1000;
+pub const NUM_CONNECTIONS_PART_1: usize = 1000;
 
-fn largest_3_connection_groups_product(input: &str, num_connections: usize) -> usize {
-    let points = parser::as_type::<Point3<f64>>.lines().parse(input).unwrap();
-    let pairs = geometry::k_closest_pair_indices(&points, num_connections);
-    let mut union_find = UnionFind::new(points.len());
-    for (left, right) in pairs {
-        union_find.union(left, right);
+pub struct Sol<const NUM_CONNECTIONS: usize>;
+
+impl<const NUM_CONNECTIONS: usize> Solution for Sol<NUM_CONNECTIONS> {
+    type Parsed = Vec<Point3<f64>>;
+
+    fn parser(&self) -> impl Parser<Self::Parsed> {
+        parser::as_type::<Point3<f64>>.lines()
     }
 
-    (0..points.len())
-        .map(|i| union_find.find(i))
-        .unique()
-        .collect::<Vec<_>>()
-        .into_iter()
-        .map(|root| union_find.get_size(root))
-        .k_largest(3)
-        .product::<usize>()
-}
+    fn part1(&self, points: &Self::Parsed) -> String {
+        let pairs = geometry::k_closest_pair_indices(&points, NUM_CONNECTIONS);
+        let mut union_find = UnionFind::new(points.len());
+        for (left, right) in pairs {
+            union_find.union(left, right);
+        }
 
-pub struct Day08;
-
-impl Solution for Day08 {
-    fn part1(&self, input: &str) -> String {
-        largest_3_connection_groups_product(input, NUM_CONNECTIONS_PART_1).to_string()
+        (0..points.len())
+            .map(|i| union_find.find(i))
+            .unique()
+            .collect::<Vec<_>>()
+            .into_iter()
+            .map(|root| union_find.get_size(root))
+            .k_largest(3)
+            .product::<usize>()
+            .to_string()
     }
 
-    fn part2(&self, input: &str) -> String {
-        let points = parser::as_type::<Point3<f64>>.lines().parse(input).unwrap();
-        let pairs = geometry::closest_pair_indices(&points);
+    fn part2(&self, points: &Self::Parsed) -> String {
+        let pairs = geometry::closest_pair_indices(points);
         let mut union_find = UnionFind::new(points.len());
 
         for (left, right) in pairs {
@@ -50,8 +51,9 @@ impl Solution for Day08 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::solutions::Solution;
+    use crate::solutions::{check_part1, check_part2};
 
+    const TEST_NUM_CONNECTIONS_PART_1: usize = 10;
     const TEST_INPUT: &str = "162,817,812
 57,618,57
 906,360,560
@@ -75,11 +77,11 @@ mod tests {
 
     #[test]
     fn test_part1() {
-        assert_eq!(largest_3_connection_groups_product(TEST_INPUT, 10), 40);
+        check_part1(&Sol::<TEST_NUM_CONNECTIONS_PART_1>, TEST_INPUT, "40");
     }
 
     #[test]
     fn test_part2() {
-        assert_eq!(Day08.part2(TEST_INPUT), "25272");
+        check_part2(&Sol::<TEST_NUM_CONNECTIONS_PART_1>, TEST_INPUT, "25272");
     }
 }

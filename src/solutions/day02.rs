@@ -33,13 +33,16 @@ fn is_id_invalid_part2(id: &IdType) -> bool {
     false
 }
 
-pub struct Day02;
+pub struct Sol;
 
-impl Solution for Day02 {
-    fn part1(&self, input: &str) -> String {
-        let ranges = parser::list(parser::as_type::<Range<IdType>>, ",")
-            .parse(input)
-            .unwrap();
+impl Solution for Sol {
+    type Parsed = Vec<Range<IdType>>;
+
+    fn parser(&self) -> impl Parser<Self::Parsed> {
+        parser::list(parser::as_type::<Range<IdType>>, ",")
+    }
+
+    fn part1(&self, ranges: &Self::Parsed) -> String {
         let mut result = 0;
         for range in ranges {
             result += range.iter().filter(is_id_invalid_part1).sum::<IdType>();
@@ -47,10 +50,7 @@ impl Solution for Day02 {
         result.to_string()
     }
 
-    fn part2(&self, input: &str) -> String {
-        let ranges = parser::list(parser::as_type::<Range<IdType>>, ",")
-            .parse(input)
-            .unwrap();
+    fn part2(&self, ranges: &Self::Parsed) -> String {
         let mut result = 0;
         for range in ranges {
             result += range.iter().filter(is_id_invalid_part2).sum::<IdType>();
@@ -62,17 +62,17 @@ impl Solution for Day02 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::solutions::Solution;
+    use crate::solutions::{check_part1, check_part2};
 
     const TEST_INPUT: &str = "11-22,95-115,998-1012,1188511880-1188511890,222220-222224,1698522-1698528,446443-446449,38593856-38593862,565653-565659,824824821-824824827,2121212118-2121212124";
 
     #[test]
     fn test_part1() {
-        assert_eq!(Day02.part1(TEST_INPUT), "1227775554");
+        check_part1(&Sol, TEST_INPUT, "1227775554");
     }
 
     #[test]
     fn test_part2() {
-        assert_eq!(Day02.part2(TEST_INPUT), "4174379265");
+        check_part2(&Sol, TEST_INPUT, "4174379265");
     }
 }

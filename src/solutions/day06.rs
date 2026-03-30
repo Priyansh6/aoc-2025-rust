@@ -1,19 +1,12 @@
 use crate::solutions::Solution;
 use crate::utils;
 use crate::utils::parser;
-use crate::utils::parser::{char_match, CharParser, ParseError, Parser};
+use crate::utils::parser::{char_match, CharParser, Parser};
 use itertools::Itertools;
 
-enum Operator {
+pub enum Operator {
     Add,
     Multiply,
-}
-
-fn parse_operator(c: char) -> Result<Operator, ParseError> {
-    (char_match! {
-        '+' => Operator::Add,
-        '*' => Operator::Multiply,
-    })(c)
 }
 
 fn calculate_sum(operators: &[Operator], num_groups: &[Vec<u64>]) -> u64 {
@@ -27,27 +20,41 @@ fn calculate_sum(operators: &[Operator], num_groups: &[Vec<u64>]) -> u64 {
         .sum()
 }
 
-pub struct Day06;
+pub struct Sol;
 
-impl Solution for Day06 {
-    fn part1(&self, input: &str) -> String {
-        let num_grid_parser = parser::as_type::<u64>.split_whitespace().lines();
+impl Solution for Sol {
+    type Parsed = (Vec<String>, Vec<Operator>);
+
+    fn parser(&self) -> impl Parser<Self::Parsed> {
+        let parse_operator = char_match! {
+            '+' => Operator::Add,
+            '*' => Operator::Multiply,
+        };
+        let num_grid_lines_parser = parser::as_string.lines();
         let operators_parser = parse_operator.into_parser().split_whitespace();
-        let (num_grid, operators) = parser::rsplit_once(num_grid_parser, operators_parser, "\n")
-            .parse(input)
-            .unwrap();
+        parser::rsplit_once(num_grid_lines_parser, operators_parser, "\n")
+    }
+
+    fn part1(&self, (num_grid_lines, operators): &Self::Parsed) -> String {
+        let num_grid = num_grid_lines
+            .iter()
+            .map(|line| {
+                parser::as_type::<u64>
+                    .split_whitespace()
+                    .parse(line)
+                    .unwrap()
+            })
+            .collect_vec();
 
         let num_groups = utils::row_to_column_major(num_grid);
         calculate_sum(&operators, &num_groups).to_string()
     }
 
-    fn part2(&self, input: &str) -> String {
-        let char_grid_parser = parser::identity.char_list().lines();
-        let operators_parser = parse_operator.into_parser().split_whitespace();
-        let (char_grid, operators) = parser::rsplit_once(char_grid_parser, operators_parser, "\n")
-            .parse(input)
-            .unwrap();
-
+    fn part2(&self, (num_grid_lines, operators): &Self::Parsed) -> String {
+        let char_grid = num_grid_lines
+            .iter()
+            .map(|line| parser::char_identity.char_list().parse(line).unwrap())
+            .collect_vec();
         // Convert grid to column-major format as characters
         let col_major_char_grid: Vec<Vec<char>> = utils::row_to_column_major(char_grid);
 
@@ -72,7 +79,7 @@ impl Solution for Day06 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::solutions::Solution;
+    use crate::solutions::{check_part1, check_part2};
 
     const TEST_INPUT: &str = concat!(
         "123 328  51 64 \n",
@@ -83,11 +90,11 @@ mod tests {
 
     #[test]
     fn test_part1() {
-        assert_eq!(Day06.part1(TEST_INPUT), "4277556");
+        check_part1(&Sol, TEST_INPUT, "4277556");
     }
 
     #[test]
     fn test_part2() {
-        assert_eq!(Day06.part2(TEST_INPUT), "3263827");
+        check_part2(&Sol, TEST_INPUT, "3263827");
     }
 }

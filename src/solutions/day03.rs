@@ -16,13 +16,7 @@ fn propagate_max_and_set_next_to_zero(slice: &mut [u32], val: u32) {
     slice[len - 1] = cmp::max(val, slice[len - 1]);
 }
 
-fn solution(input: &str, num_batteries: usize) -> u64 {
-    let digit_lines = parser::digit::<10>
-        .char_list()
-        .lines()
-        .parse(input)
-        .unwrap();
-
+fn sum_of_largest_joltages(digit_lines: &Vec<Vec<u32>>, num_batteries: usize) -> u64 {
     let mut sum: u64 = 0;
     for digits in digit_lines {
         let mut result_digits = vec![0; num_batteries];
@@ -37,22 +31,28 @@ fn solution(input: &str, num_batteries: usize) -> u64 {
     sum
 }
 
-pub struct Day03;
+pub struct Sol;
 
-impl Solution for Day03 {
-    fn part1(&self, input: &str) -> String {
-        solution(input, 2).to_string()
+impl Solution for Sol {
+    type Parsed = Vec<Vec<u32>>;
+
+    fn parser(&self) -> impl Parser<Self::Parsed> {
+        parser::digit::<10>.char_list().lines()
     }
 
-    fn part2(&self, input: &str) -> String {
-        solution(input, 12).to_string()
+    fn part1(&self, digit_lines: &Self::Parsed) -> String {
+        sum_of_largest_joltages(digit_lines, 2).to_string()
+    }
+
+    fn part2(&self, digit_lines: &Self::Parsed) -> String {
+        sum_of_largest_joltages(digit_lines, 12).to_string()
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::solutions::Solution;
+    use crate::solutions::{check_part1, check_part2};
 
     const TEST_INPUT: &str = "987654321111111
 811111111111119
@@ -61,21 +61,21 @@ mod tests {
 
     #[test]
     fn test_part1() {
-        assert_eq!(Day03.part1(TEST_INPUT), "357");
+        check_part1(&Sol, TEST_INPUT, "357");
     }
 
     #[test]
     fn test_part2() {
-        assert_eq!(Day03.part2(TEST_INPUT), "3121910778619");
+        check_part2(&Sol, TEST_INPUT, "3121910778619");
     }
 
     #[test]
     fn test_part1_single_line() {
-        assert_eq!(Day03.part1("987654321111111"), "98");
+        check_part1(&Sol, "987654321111111", "98");
     }
 
     #[test]
     fn test_part2_single_line() {
-        assert_eq!(Day03.part2("987654321111111"), "987654321111");
+        check_part2(&Sol, "987654321111111", "987654321111");
     }
 }

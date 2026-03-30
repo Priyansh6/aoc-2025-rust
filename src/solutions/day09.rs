@@ -3,7 +3,7 @@ use crate::utils::parser::{self, Parser};
 use itertools::Itertools;
 
 #[derive(Debug, Clone, Copy)]
-struct RedTile {
+pub struct RedTile {
     row: u64,
     col: u64,
 }
@@ -14,16 +14,18 @@ impl RedTile {
     }
 }
 
-pub struct Day09;
+pub struct Sol;
 
-impl Solution for Day09 {
-    fn part1(&self, input: &str) -> String {
-        let tiles = parser::array(parser::as_type::<u64>, ",")
+impl Solution for Sol {
+    type Parsed = Vec<RedTile>;
+
+    fn parser(&self) -> impl Parser<Self::Parsed> {
+        parser::array(parser::as_type::<u64>, ",")
             .map(|[row, col]| RedTile { row, col })
             .lines()
-            .parse(input)
-            .unwrap();
+    }
 
+    fn part1(&self, tiles: &Self::Parsed) -> String {
         tiles
             .iter()
             .tuple_combinations()
@@ -33,13 +35,7 @@ impl Solution for Day09 {
             .to_string()
     }
 
-    fn part2(&self, input: &str) -> String {
-        let tiles = parser::array(parser::as_type::<u64>, ",")
-            .map(|[row, col]| RedTile { row, col })
-            .lines()
-            .parse(input)
-            .unwrap();
-
+    fn part2(&self, tiles: &Self::Parsed) -> String {
         todo!()
     }
 }
@@ -47,7 +43,7 @@ impl Solution for Day09 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::solutions::Solution;
+    use crate::solutions::{check_part1, check_part2};
 
     const TEST_INPUT: &str = "7,1
 11,1
@@ -60,11 +56,11 @@ mod tests {
 
     #[test]
     fn test_part1() {
-        assert_eq!(Day09.part1(TEST_INPUT), "50");
+        check_part1(&Sol, TEST_INPUT, "50");
     }
 
     #[test]
     fn test_part2() {
-        assert_eq!(Day09.part2(TEST_INPUT), "25272");
+        check_part2(&Sol, TEST_INPUT, "25272");
     }
 }
