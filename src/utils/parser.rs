@@ -175,11 +175,8 @@ pub fn rsplit_once<T, U>(
     last: impl for<'a> Parser<&'a str, Output = U>,
     separator: &str,
 ) -> impl for<'a> Parser<&'a str, Output = (T, U)> {
-    let separator = separator.to_string();
     move |input: &str| {
-        let (rest, last_line) = input
-            .rsplit_once(&*separator)
-            .ok_or(ParseError::EmptyInput)?;
+        let (rest, last_line) = input.rsplit_once(separator).ok_or(ParseError::EmptyInput)?;
         Ok((body.parse(rest)?, last.parse(last_line)?))
     }
 }
