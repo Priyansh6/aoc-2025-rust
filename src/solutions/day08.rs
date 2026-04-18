@@ -1,7 +1,7 @@
 use crate::solutions::Solution;
 use crate::utils::geometry::{self, Point3};
 use crate::utils::parser;
-use crate::utils::parser::Parser;
+use crate::utils::parser::{Parser, StrParser};
 use crate::utils::union_find::UnionFind;
 use itertools::Itertools;
 
@@ -12,8 +12,8 @@ pub struct Sol<const NUM_CONNECTIONS: usize>;
 impl<const NUM_CONNECTIONS: usize> Solution for Sol<NUM_CONNECTIONS> {
     type Parsed = Vec<Point3<f64>>;
 
-    fn parser(&self) -> impl Parser<Self::Parsed> {
-        parser::as_type::<Point3<f64>>.lines()
+    fn parser(&self) -> impl Parser<&str, Output = Self::Parsed> {
+        parser::from_str::<Point3<f64>>.lines()
     }
 
     fn part1(&self, points: &Self::Parsed) -> String {

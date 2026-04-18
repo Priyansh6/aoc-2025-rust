@@ -1,7 +1,7 @@
 use crate::solutions::Solution;
-use crate::utils;
 use crate::utils::parser;
-use crate::utils::parser::{char_match, CharParser, Parser};
+use crate::utils::parser::{CharParser, Parser, StrParser};
+use crate::{char_match, utils};
 use itertools::Itertools;
 
 pub enum Operator {
@@ -25,36 +25,32 @@ pub struct Sol;
 impl Solution for Sol {
     type Parsed = (Vec<String>, Vec<Operator>);
 
-    fn parser(&self) -> impl Parser<Self::Parsed> {
+    fn parser(&self) -> impl Parser<&str, Output = Self::Parsed> {
         let parse_operator = char_match! {
             '+' => Operator::Add,
             '*' => Operator::Multiply,
         };
         let num_grid_lines_parser = parser::as_string.lines();
-        let operators_parser = parse_operator.into_parser().split_whitespace();
+        let operators_parser = parse_operator.single_char().split_whitespace();
         parser::rsplit_once(num_grid_lines_parser, operators_parser, "\n")
     }
 
     fn part1(&self, (num_grid_lines, operators): &Self::Parsed) -> String {
-        let num_grid = num_grid_lines
-            .iter()
-            .map(|line| {
-                parser::as_type::<u64>
-                    .split_whitespace()
-                    .parse(line)
-                    .unwrap()
-            })
-            .collect_vec();
-
+        let num_grid = parser::from_str::<u64>
+            .split_whitespace()
+            .into_each()
+            .parse(num_grid_lines.iter().map(String::as_str))
+            .unwrap();
         let num_groups = utils::row_to_column_major(num_grid);
         calculate_sum(&operators, &num_groups).to_string()
     }
 
     fn part2(&self, (num_grid_lines, operators): &Self::Parsed) -> String {
-        let char_grid = num_grid_lines
-            .iter()
-            .map(|line| parser::char_identity.char_list().parse(line).unwrap())
-            .collect_vec();
+        let char_grid = parser::identity
+            .chars()
+            .into_each()
+            .parse(num_grid_lines.iter().map(String::as_str))
+            .unwrap();
         // Convert grid to column-major format as characters
         let col_major_char_grid: Vec<Vec<char>> = utils::row_to_column_major(char_grid);
 

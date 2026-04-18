@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use crate::utils::parser::{CharParser, ParseError, Parser};
+use crate::utils::parser::{CharParser, ParseError, Parser, StrParser};
 use std::ops::{Index, IndexMut};
 
 #[derive(PartialEq, Eq, Hash, Copy, Clone, Debug)]
@@ -43,8 +43,10 @@ impl<T> Grid<T> {
         })
     }
 
-    pub fn parser(cell: impl CharParser<T>) -> impl Parser<Grid<T>> {
-        cell.char_list().lines().and_then(Grid::from_rows)
+    pub fn parser(
+        cell: impl CharParser<Output = T>,
+    ) -> impl for<'a> Parser<&'a str, Output = Grid<T>> {
+        cell.chars().lines().and_then(Grid::from_rows)
     }
 
     pub fn height(&self) -> usize {

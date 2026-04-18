@@ -1,7 +1,7 @@
 use crate::solutions::Solution;
 use crate::utils;
 use crate::utils::parser;
-use crate::utils::parser::{CharParser, Parser};
+use crate::utils::parser::{CharParser, Parser, StrParser};
 use std::cmp;
 
 fn propagate_max_and_set_next_to_zero(slice: &mut [u32], val: u32) {
@@ -36,8 +36,8 @@ pub struct Sol;
 impl Solution for Sol {
     type Parsed = Vec<Vec<u32>>;
 
-    fn parser(&self) -> impl Parser<Self::Parsed> {
-        parser::digit::<10>.char_list().lines()
+    fn parser(&self) -> impl Parser<&str, Output = Self::Parsed> {
+        parser::digit::<10>.chars().lines()
     }
 
     fn part1(&self, digit_lines: &Self::Parsed) -> String {

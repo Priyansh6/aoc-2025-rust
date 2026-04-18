@@ -1,6 +1,7 @@
+use crate::char_match;
 use crate::solutions::Solution;
 use crate::utils::parser;
-use crate::utils::parser::{char_match, Parser};
+use crate::utils::parser::{Parser, StrParser};
 
 const DIAL_NUMBERS: i32 = 100;
 const STARTING_NUMBER: i32 = 50;
@@ -21,12 +22,12 @@ pub struct Sol;
 impl Solution for Sol {
     type Parsed = Vec<DialAction>;
 
-    fn parser(&self) -> impl Parser<Self::Parsed> {
+    fn parser(&self) -> impl Parser<&str, Output = Self::Parsed> {
         let parse_direction = char_match! {
             'L' => Direction::Left,
             'R' => Direction::Right,
         };
-        parser::uncons(parse_direction, parser::as_type::<i32>)
+        parser::uncons(parse_direction, parser::from_str::<i32>)
             .map(|(direction, distance)| DialAction {
                 direction,
                 distance,

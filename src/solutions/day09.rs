@@ -1,5 +1,5 @@
 use crate::solutions::Solution;
-use crate::utils::parser::{self, Parser};
+use crate::utils::parser::{self, Parser, StrParser};
 use itertools::Itertools;
 
 #[derive(Debug, Clone, Copy)]
@@ -19,8 +19,9 @@ pub struct Sol;
 impl Solution for Sol {
     type Parsed = Vec<RedTile>;
 
-    fn parser(&self) -> impl Parser<Self::Parsed> {
-        parser::array(parser::as_type::<u64>, ",")
+    fn parser(&self) -> impl Parser<&str, Output = Self::Parsed> {
+        parser::from_str::<u64>
+            .split_array(",")
             .map(|[row, col]| RedTile { row, col })
             .lines()
     }

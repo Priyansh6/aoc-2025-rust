@@ -1,6 +1,7 @@
+use crate::char_match;
 use crate::solutions::Solution;
 use crate::utils::grid::{Grid, GridPosition};
-use crate::utils::parser::{char_match, Parser};
+use crate::utils::parser::Parser;
 use std::collections::{HashMap, HashSet};
 
 #[derive(PartialEq, Copy, Clone)]
@@ -74,7 +75,7 @@ pub struct Sol;
 impl Solution for Sol {
     type Parsed = Grid<Square>;
 
-    fn parser(&self) -> impl Parser<Self::Parsed> {
+    fn parser(&self) -> impl Parser<&str, Output = Self::Parsed> {
         let parse_square = char_match! {
             '.' => Square::Blank,
             'S' => Square::Source,

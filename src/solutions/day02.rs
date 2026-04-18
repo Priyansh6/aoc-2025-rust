@@ -1,6 +1,6 @@
 use crate::solutions::Solution;
 use crate::utils::parser;
-use crate::utils::parser::Parser;
+use crate::utils::parser::{Parser, StrParser};
 use crate::utils::range::Range;
 
 type IdType = u64;
@@ -38,8 +38,8 @@ pub struct Sol;
 impl Solution for Sol {
     type Parsed = Vec<Range<IdType>>;
 
-    fn parser(&self) -> impl Parser<Self::Parsed> {
-        parser::list(parser::as_type::<Range<IdType>>, ",")
+    fn parser(&self) -> impl Parser<&str, Output = Self::Parsed> {
+        parser::from_str::<Range<IdType>>.split(",")
     }
 
     fn part1(&self, ranges: &Self::Parsed) -> String {

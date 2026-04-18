@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 use crate::utils::parser;
-use crate::utils::parser::{ParseError, Parser};
+use crate::utils::parser::{ParseError, Parser, StrParser};
 use itertools::Itertools;
 use std::fmt::Display;
 use std::str::FromStr;
@@ -27,9 +27,7 @@ where
     type Err = ParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        parser::array(parser::as_type, ",")
-            .map(Vector::new)
-            .parse(s)
+        parser::from_str.split_array(",").map(Vector::new).parse(s)
     }
 }
 

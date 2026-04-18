@@ -13,7 +13,7 @@ use crate::utils::parser::Parser;
 pub trait Solution {
     type Parsed;
 
-    fn parser(&self) -> impl Parser<Self::Parsed>;
+    fn parser(&self) -> impl Parser<&str, Output = Self::Parsed>;
 
     fn part1(&self, parsed: &Self::Parsed) -> String;
     fn part2(&self, parsed: &Self::Parsed) -> String;

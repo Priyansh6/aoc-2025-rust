@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 use crate::utils::parser;
-use crate::utils::parser::{ParseError, Parser};
+use crate::utils::parser::{ParseError, Parser, StrParser};
 use std::cmp;
 use std::fmt::Display;
 use std::str::FromStr;
@@ -54,7 +54,8 @@ where
     type Err = ParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        parser::array(parser::as_type::<T>, "-")
+        parser::from_str
+            .split_array("-")
             .map(|[start, end]| Range { start, end })
             .parse(s)
     }
