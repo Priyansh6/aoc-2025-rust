@@ -12,11 +12,29 @@ pub use str_parser::StrParser;
 
 // === Core Trait ===
 
+/// A generic parser that consumes an input of type `I` and produces a typed result.
+///
+/// The `Parser` trait is the foundation of this library. Any type implementing it can
+/// be composed using the combinator methods [`map`](Parser::map),
+/// [`and_then`](Parser::and_then), and [`into_each`](Parser::into_each).
 pub trait Parser<I> {
+    /// The type produced on a successful parse.
     type Output;
 
+    /// Attempt to parse `input`, returning `Ok(Self::Output)` on success or a
+    /// [`ParseError`] on failure.
     fn parse(&self, input: I) -> Result<Self::Output, ParseError>;
 
+    /// Transform the output of this parser by applying `f` to it.
+    ///
+    /// Analogous to [`Result::map`]: if parsing succeeds, `f` is called on the result;
+    /// if it fails, the error is propagated unchanged.
+    ///
+    /// # Example
+    /// ```
+    /// let p = from_str::<u32>.map(|n| n * 2);
+    /// assert_eq!(p.parse("21"), Ok(42));
+    /// ```
     fn map<F, U>(self, f: F) -> Map<Self, F>
     where
         Self: Sized,
@@ -25,6 +43,18 @@ pub trait Parser<I> {
         Map { parser: self, f }
     }
 
+    /// Chain this parser with a fallible transformation `f`.
+    ///
+    /// Analogous to [`Result::and_then`]: if parsing succeeds, `f` receives the output
+    /// and may itself return an error, allowing validation or further parsing in a
+    /// single step.
+    ///
+    /// # Example
+    /// ```
+    /// let positive = from_str::<i32>.and_then(|n| {
+    ///     if n > 0 { Ok(n) } else { Err("expected positive".into()) }
+    /// });
+    /// ```
     fn and_then<F, U>(self, f: F) -> AndThen<Self, F>
     where
         Self: Sized,
@@ -33,6 +63,17 @@ pub trait Parser<I> {
         AndThen { parser: self, f }
     }
 
+    /// Lift this parser to operate over every item in a collection.
+    ///
+    /// Returns a new parser that accepts any `C: IntoIterator<Item = I>` and applies
+    /// `self` to each element, collecting the results into a `Vec`. Fails fast on the
+    /// first element that does not parse.
+    ///
+    /// # Example
+    /// ```
+    /// let p = from_str::<u32>.into_each();
+    /// assert_eq!(p.parse(vec!["1", "2", "3"]), Ok(vec![1, 2, 3]));
+    /// ```
     fn into_each(self) -> IntoEach<Self>
     where
         Self: Sized,
@@ -41,7 +82,10 @@ pub trait Parser<I> {
     }
 }
 
-// Blanket impl for functions
+/// Blanket [`Parser`] implementation for plain functions `Fn(I) -> Result<T, ParseError>`.
+///
+/// This lets any compatible function be used directly wherever a `Parser` is expected,
+/// without needing a wrapper type.
 impl<I, T, F> Parser<I> for F
 where
     F: Fn(I) -> Result<T, ParseError>,
@@ -53,6 +97,9 @@ where
     }
 }
 
+/// A parser that applies a mapping function to the output of an inner parser.
+///
+/// Constructed via [`Parser::map`].
 pub struct Map<P, F> {
     parser: P,
     f: F,
@@ -70,6 +117,9 @@ where
     }
 }
 
+/// A parser that applies a fallible mapping function to the output of an inner parser.
+///
+/// Constructed via [`Parser::and_then`].
 pub struct AndThen<P, F> {
     parser: P,
     f: F,
@@ -87,6 +137,9 @@ where
     }
 }
 
+/// A parser that applies an inner parser to every item in a collection.
+///
+/// Constructed via [`Parser::into_each`].
 pub struct IntoEach<P> {
     parser: P,
 }
@@ -98,6 +151,8 @@ where
 {
     type Output = Vec<P::Output>;
 
+    /// Parses each item in `input` using the inner parser, collecting successes into a
+    /// `Vec`. Returns the first error encountered, if any.
     fn parse(&self, input: C) -> Result<Self::Output, ParseError> {
         input
             .into_iter()
@@ -108,22 +163,43 @@ where
 
 // === Standalone parsers ===
 
+/// Returns the input string slice unchanged.
+///
+/// Useful as a no-op parser when a `Parser<&str, Output = &str>` is required.
 pub fn as_str(s: &str) -> Result<&str, ParseError> {
     Ok(s)
 }
 
+/// Converts the input string slice into an owned [`String`].
 pub fn as_string(s: &str) -> Result<String, ParseError> {
     Ok(s.to_string())
 }
 
+/// Returns any input value unchanged, always succeeding.
+///
+/// The equivalent of [`std::convert::identity`] in parser form.
 pub fn identity<T>(item: T) -> Result<T, ParseError> {
     Ok(item)
 }
 
+/// Discards the input string slice and returns `()`.
+///
+/// Useful when a parser is required for its side-structure (e.g. in a combinator)
+/// but the value itself is not needed.
 pub fn unit(_s: &str) -> Result<(), ParseError> {
     Ok(())
 }
 
+/// Parses a string slice into any type that implements [`FromStr`].
+///
+/// The [`FromStr::Err`] type must implement [`Display`] so it can be converted into
+/// a [`ParseError`].
+///
+/// # Example
+/// ```
+/// assert_eq!(from_str::<u32>("42"), Ok(42));
+/// assert!(from_str::<u32>("abc").is_err());
+/// ```
 pub fn from_str<T>(s: &str) -> Result<T, ParseError>
 where
     T: FromStr,
@@ -132,12 +208,33 @@ where
     s.parse::<T>().map_err(|e| e.to_string().into())
 }
 
+/// Interprets a character as a digit in the given `RADIX`, returning its numeric value.
+///
+/// `RADIX` is a const generic parameter (e.g. `10` for decimal, `16` for hex).
+/// Returns [`ParseError::NotADigit`] if the character is not a valid digit in that base.
+///
+/// # Example
+/// ```
+/// assert_eq!(digit::<10>('7'), Ok(7));
+/// assert_eq!(digit::<16>('f'), Ok(15));
+/// assert!(digit::<10>('z').is_err());
+/// ```
 pub fn digit<const RADIX: u32>(c: char) -> Result<u32, ParseError> {
     c.to_digit(RADIX).ok_or(ParseError::NotADigit(c))
 }
 
 // === Standalone combinators ===
 
+/// Splits a string on `separator` and parses the left and right halves independently.
+///
+/// Expects exactly one occurrence of `separator`, producing a [`ParseError::WrongLength`]
+/// if the split yields any number of parts other than two.
+///
+/// # Example
+/// ```
+/// let p = split_pair(from_str::<u32>, from_str::<u32>, "-");
+/// assert_eq!(p.parse("10-20"), Ok((10, 20)));
+/// ```
 pub fn split_pair<T, U>(
     left: impl for<'a> Parser<&'a str, Output = T>,
     right: impl for<'a> Parser<&'a str, Output = U>,
@@ -157,6 +254,16 @@ pub fn split_pair<T, U>(
     }
 }
 
+/// Splits off the first character of the input and parses it and the remainder separately.
+///
+/// The first character is passed to the `first` [`CharParser`]; the rest of the string
+/// slice is passed to `rest`. Returns [`ParseError::EmptyInput`] if the input is empty.
+///
+/// # Example
+/// ```
+/// let p = uncons(digit::<10>, from_str::<u32>);
+/// assert_eq!(p.parse("142"), Ok((1, 42)));
+/// ```
 pub fn uncons<T, U>(
     first: impl CharParser<Output = T>,
     rest: impl for<'a> Parser<&'a str, Output = U>,
@@ -170,6 +277,16 @@ pub fn uncons<T, U>(
     }
 }
 
+/// Splits a string on the *last* occurrence of `separator`, parsing each part separately.
+///
+/// Everything before the final separator is passed to `body`; the trailing segment is
+/// passed to `last`. Returns [`ParseError::EmptyInput`] if `separator` is not found.
+///
+/// # Example
+/// ```
+/// let p = rsplit_once(as_str, as_str, "/");
+/// assert_eq!(p.parse("a/b/c"), Ok(("a/b", "c")));
+/// ```
 pub fn rsplit_once<T, U>(
     body: impl for<'a> Parser<&'a str, Output = T>,
     last: impl for<'a> Parser<&'a str, Output = U>,
