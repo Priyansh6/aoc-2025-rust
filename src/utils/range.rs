@@ -3,14 +3,27 @@
 use crate::utils::parser;
 use crate::utils::parser::{ParseError, Parser, StrParser};
 use std::cmp;
+use std::cmp::Ordering;
+use std::error::Error;
 use std::fmt::Display;
 use std::str::FromStr;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Range<T> {
-    pub start: T,
-    pub end: T,
+    start: T,
+    end: T,
 }
+
+#[derive(Debug)]
+pub struct RangeError;
+
+impl Display for RangeError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Range start must be <= end")
+    }
+}
+
+impl Error for RangeError {}
 
 impl Range<u64> {
     pub fn iter(&self) -> impl Iterator<Item = u64> {
@@ -23,6 +36,30 @@ impl Range<u64> {
 }
 
 impl<T: PartialOrd> Range<T> {
+    pub fn new(start: T, end: T) -> Result<Self, RangeError> {
+        if start <= end {
+            Ok(Range { start, end })
+        } else {
+            Err(RangeError)
+        }
+    }
+
+    pub fn between(a: T, b: T) -> Self {
+        if a.partial_cmp(&b).unwrap() != Ordering::Greater {
+            Range { start: a, end: b }
+        } else {
+            Range { start: b, end: a }
+        }
+    }
+
+    pub fn start(&self) -> &T {
+        &self.start
+    }
+
+    pub fn end(&self) -> &T {
+        &self.end
+    }
+
     pub fn contains(&self, x: &T) -> bool {
         &self.start <= x && x <= &self.end
     }
@@ -55,6 +92,7 @@ impl<T: Ord + Copy> Range<T> {
 
 impl<T> FromStr for Range<T>
 where
+    T: PartialOrd,
     T: FromStr,
     T::Err: Display,
 {
@@ -63,7 +101,9 @@ where
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         parser::from_str
             .split_array("-")
-            .map(|[start, end]| Range { start, end })
+            .and_then(|[start, end]| {
+                Range::new(start, end).map_err(|err| ParseError::Other(err.to_string()))
+            })
             .parse(s)
     }
 }

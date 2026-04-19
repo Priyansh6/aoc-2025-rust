@@ -26,19 +26,13 @@ fn tiles_to_wall(tiles: (&RedTile, &RedTile)) -> Wall {
         Wall {
             orientation: Orientation::Vertical,
             anchor: t1.x(),
-            span: Range {
-                start: t1.y().min(t2.y()),
-                end: t1.y().max(t2.y()),
-            },
+            span: Range::between(t1.y(), t2.y()),
         }
     } else {
         Wall {
             orientation: Orientation::Horizontal,
             anchor: t1.y(),
-            span: Range {
-                start: t1.x().min(t2.x()),
-                end: t1.x().max(t2.x()),
-            },
+            span: Range::between(t1.x(), t2.x()),
         }
     }
 }
@@ -49,14 +43,8 @@ fn rectangle_has_no_cuts(
     horizontal_walls: &[Wall],
     vertical_walls: &[Wall],
 ) -> bool {
-    let x_range = Range {
-        start: t1.x().min(t2.x()),
-        end: t1.x().max(t2.x()),
-    };
-    let y_range = Range {
-        start: t1.y().min(t2.y()),
-        end: t1.y().max(t2.y()),
-    };
+    let x_range = Range::between(t1.x(), t2.x());
+    let y_range = Range::between(t1.y(), t2.y());
 
     let horizontal_cut = horizontal_walls.iter().any(|wall| {
         y_range.contains_exclusive(&wall.anchor) && wall.span.overlaps_strictly(&x_range)
@@ -73,10 +61,7 @@ fn is_in_loop(x: f64, y: f64, horizontal_walls: &[Wall]) -> bool {
     horizontal_walls
         .iter()
         .filter(|wall| {
-            let span = Range {
-                start: wall.span.start as f64,
-                end: wall.span.end as f64,
-            };
+            let span = Range::new(*wall.span.start() as f64, *wall.span.end() as f64).unwrap();
             span.contains(&x) && (wall.anchor as f64) < y
         })
         .count()

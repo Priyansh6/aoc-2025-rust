@@ -31,7 +31,7 @@ impl Solution for Sol {
 
     fn part2(&self, (ranges, _): &Self::Parsed) -> String {
         let mut ranges = ranges.clone();
-        ranges.sort_by_key(|range| range.start);
+        ranges.sort_by_key(|range| range.start().clone());
 
         let mut merged_ranges: Vec<Range<IdType>> = Vec::new();
 
