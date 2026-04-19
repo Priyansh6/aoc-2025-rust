@@ -13,7 +13,9 @@ pub trait StrParser: for<'a> Parser<&'a str> {
     ///
     /// # Example
     /// ```
-    /// let p = from_str::<u32>.lines();
+    /// # use aoc_lib::utils::parser;
+    /// # use aoc_lib::utils::parser::{Parser, StrParser};
+    /// let p = parser::from_str::<u32>.lines();
     /// assert_eq!(p.parse("1\n2\n3"), Ok(vec![1, 2, 3]));
     /// ```
     fn lines(self) -> Lines<Self>
@@ -30,7 +32,9 @@ pub trait StrParser: for<'a> Parser<&'a str> {
     ///
     /// # Example
     /// ```
-    /// let p = from_str::<u32>.split(",");
+    /// # use aoc_lib::utils::parser;
+    /// # use aoc_lib::utils::parser::{Parser, StrParser};
+    /// let p = parser::from_str::<u32>.split(",");
     /// assert_eq!(p.parse("1,2,3"), Ok(vec![1, 2, 3]));
     /// ```
     fn split(self, separator: &str) -> Split<Self>
@@ -51,7 +55,9 @@ pub trait StrParser: for<'a> Parser<&'a str> {
     ///
     /// # Example
     /// ```
-    /// let p = from_str::<u32>.split_whitespace();
+    /// # use aoc_lib::utils::parser;
+    /// # use aoc_lib::utils::parser::{Parser, StrParser};
+    /// let p = parser::from_str::<u32>.split_whitespace();
     /// assert_eq!(p.parse("1  2\t3"), Ok(vec![1, 2, 3]));
     /// ```
     fn split_whitespace(self) -> SplitWhitespace<Self>
@@ -69,7 +75,9 @@ pub trait StrParser: for<'a> Parser<&'a str> {
     ///
     /// # Example
     /// ```
-    /// let p = from_str::<u32>.split_array::<3>(",");
+    /// # use aoc_lib::utils::parser;
+    /// # use aoc_lib::utils::parser::{Parser, StrParser};
+    /// let p = parser::from_str::<u32>.split_array::<3>(",");
     /// assert_eq!(p.parse("1,2,3"), Ok([1, 2, 3]));
     /// assert!(p.parse("1,2").is_err());     // too few
     /// assert!(p.parse("1,2,3,4").is_err()); // too many

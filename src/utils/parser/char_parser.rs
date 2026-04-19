@@ -13,7 +13,9 @@ pub trait CharParser: Parser<char> {
     ///
     /// # Example
     /// ```
-    /// let p = digit::<10>.single_char();
+    /// # use aoc_lib::utils::parser;
+    /// # use aoc_lib::utils::parser::{CharParser, Parser};
+    /// let p = parser::digit::<10>.single_char();
     /// assert_eq!(p.parse("7"), Ok(7));
     /// assert!(p.parse("42").is_err()); // more than one char
     /// ```
@@ -31,7 +33,9 @@ pub trait CharParser: Parser<char> {
     ///
     /// # Example
     /// ```
-    /// let p = digit::<10>.chars();
+    /// # use aoc_lib::utils::parser;
+    /// # use aoc_lib::utils::parser::{CharParser, Parser};
+    /// let p = parser::digit::<10>.chars();
     /// assert_eq!(p.parse("123"), Ok(vec![1, 2, 3]));
     /// assert!(p.parse("12x").is_err());
     /// ```
@@ -110,6 +114,9 @@ impl<P: Parser<char>> Parser<&str> for Chars<P> {
 ///
 /// # Example
 /// ```
+/// # use aoc_lib::char_match;
+/// # #[derive(Debug, PartialEq)]
+/// # enum Dir { North, South, East, West }
 /// let direction = char_match! {
 ///     'N' => Dir::North,
 ///     'S' => Dir::South,
@@ -122,6 +129,8 @@ impl<P: Parser<char>> Parser<&str> for Chars<P> {
 ///
 /// The resulting closure implements [`CharParser`], so it can be composed further:
 /// ```
+/// # use aoc_lib::char_match;
+/// # use aoc_lib::utils::parser::{CharParser, Parser};
 /// let p = char_match!('0' => false, '1' => true).chars();
 /// assert_eq!(p.parse("0110"), Ok(vec![false, true, true, false]));
 /// ```

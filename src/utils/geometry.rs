@@ -6,12 +6,14 @@ use itertools::Itertools;
 use std::fmt::Display;
 use std::str::FromStr;
 
-pub type Vector3<T> = Vector<T, 3>;
+#[derive(Clone, Copy, Debug)]
 pub struct Vector<T, const N: usize> {
     vals: [T; N],
 }
+pub type Vector3<T> = Vector<T, 3>;
 pub type Point<T, const N: usize> = Vector<T, N>;
-pub type Point3<T> = Vector3<T>;
+pub type Point2<T> = Vector<T, 2>;
+pub type Point3<T> = Vector<T, 3>;
 
 impl<T, const N: usize> Vector<T, N> {
     pub fn new(vals: [T; N]) -> Self {
@@ -63,6 +65,12 @@ impl<const N: usize> Point<f64, N> {
             .map(|(a, b)| (a - b).powi(2))
             .sum::<f64>()
             .sqrt()
+    }
+}
+
+impl Point2<u64> {
+    pub fn inclusive_rect_area(&self, other: &Point2<u64>) -> u64 {
+        (self.x().abs_diff(other.x()) + 1) * (self.y().abs_diff(other.y()) + 1)
     }
 }
 

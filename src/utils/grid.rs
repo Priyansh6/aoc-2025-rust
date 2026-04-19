@@ -5,8 +5,8 @@ use std::ops::{Index, IndexMut};
 
 #[derive(PartialEq, Eq, Hash, Copy, Clone, Debug)]
 pub struct GridPosition {
-    pub row: usize,
-    pub col: usize,
+    pub x: usize,
+    pub y: usize,
 }
 
 #[derive(Clone)]
@@ -58,53 +58,46 @@ impl<T> Grid<T> {
     }
 
     pub fn below(&self, pos: &GridPosition) -> Option<GridPosition> {
-        let new_row = pos.row + 1;
-        if new_row >= self.height {
+        let new_y = pos.y + 1;
+        if new_y >= self.height {
             return None;
         }
-        Some(GridPosition {
-            row: new_row,
-            col: pos.col,
-        })
+        Some(GridPosition { x: pos.x, y: new_y })
     }
 
     pub fn above(&self, pos: &GridPosition) -> Option<GridPosition> {
-        if pos.row == 0 {
+        if pos.y == 0 {
             return None;
         }
         Some(GridPosition {
-            row: pos.row - 1,
-            col: pos.col,
+            x: pos.x,
+            y: pos.y - 1,
         })
     }
 
     pub fn right(&self, pos: &GridPosition) -> Option<GridPosition> {
-        let new_col = pos.col + 1;
-        if new_col >= self.width {
+        let new_x = pos.x + 1;
+        if new_x >= self.width {
             return None;
         }
-        Some(GridPosition {
-            row: pos.row,
-            col: new_col,
-        })
+        Some(GridPosition { x: new_x, y: pos.y })
     }
 
     pub fn left(&self, pos: &GridPosition) -> Option<GridPosition> {
-        if pos.col == 0 {
+        if pos.x == 0 {
             return None;
         }
         Some(GridPosition {
-            row: pos.row,
-            col: pos.col - 1,
+            x: pos.x - 1,
+            y: pos.y,
         })
     }
 
     pub fn iter_enumerated(&self) -> impl Iterator<Item = (GridPosition, &T)> {
-        self.cells.iter().enumerate().flat_map(|(row, row_vec)| {
-            row_vec
-                .iter()
+        self.cells.iter().enumerate().flat_map(|(y, row)| {
+            row.iter()
                 .enumerate()
-                .map(move |(col, cell)| (GridPosition { row, col }, cell))
+                .map(move |(x, cell)| (GridPosition { x, y }, cell))
         })
     }
 
@@ -121,11 +114,11 @@ impl<T> Grid<T> {
         ];
 
         OFFSETS.iter().filter_map(move |&(r_off, c_off)| {
-            let new_row = pos.row.checked_add_signed(r_off)?;
-            let new_col = pos.col.checked_add_signed(c_off)?;
+            let new_x = pos.x.checked_add_signed(c_off)?;
+            let new_y = pos.y.checked_add_signed(r_off)?;
 
-            if new_row < self.height && new_col < self.width {
-                Some(&self.cells[new_row][new_col])
+            if new_x < self.width && new_y < self.height {
+                Some(&self.cells[new_y][new_x])
             } else {
                 None
             }
@@ -135,13 +128,10 @@ impl<T> Grid<T> {
 
 impl<T: PartialEq> Grid<T> {
     pub fn find(&self, elem: &T) -> Option<GridPosition> {
-        for (row_i, row) in self.cells.iter().enumerate() {
-            for (col_i, cell) in row.iter().enumerate() {
+        for (y, row) in self.cells.iter().enumerate() {
+            for (x, cell) in row.iter().enumerate() {
                 if elem == cell {
-                    return Some(GridPosition {
-                        row: row_i,
-                        col: col_i,
-                    });
+                    return Some(GridPosition { x, y });
                 }
             }
         }
@@ -153,12 +143,12 @@ impl<T> Index<GridPosition> for Grid<T> {
     type Output = T;
 
     fn index(&self, pos: GridPosition) -> &Self::Output {
-        &self.cells[pos.row][pos.col]
+        &self.cells[pos.y][pos.x]
     }
 }
 
 impl<T> IndexMut<GridPosition> for Grid<T> {
     fn index_mut(&mut self, pos: GridPosition) -> &mut Self::Output {
-        &mut self.cells[pos.row][pos.col]
+        &mut self.cells[pos.y][pos.x]
     }
 }

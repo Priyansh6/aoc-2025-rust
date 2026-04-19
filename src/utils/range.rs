@@ -27,9 +27,16 @@ impl<T: PartialOrd> Range<T> {
         &self.start <= x && x <= &self.end
     }
 
-    pub fn overlaps_with(&self, range: &Range<T>) -> bool {
-        (self.start <= range.start && range.start <= self.end)
-            || (self.end <= range.end && range.end <= self.end)
+    pub fn contains_exclusive(&self, x: &T) -> bool {
+        &self.start < x && x < &self.end
+    }
+
+    pub fn overlaps(&self, range: &Range<T>) -> bool {
+        self.start <= range.end && range.start <= self.end
+    }
+
+    pub fn overlaps_strictly(&self, range: &Range<T>) -> bool {
+        self.start < range.end && range.start < self.end
     }
 }
 

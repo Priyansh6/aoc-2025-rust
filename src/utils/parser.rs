@@ -32,7 +32,9 @@ pub trait Parser<I> {
     ///
     /// # Example
     /// ```
-    /// let p = from_str::<u32>.map(|n| n * 2);
+    /// # use aoc_lib::utils::parser;
+    /// # use aoc_lib::utils::parser::Parser;
+    /// let p = parser::from_str::<u32>.map(|n| n * 2);
     /// assert_eq!(p.parse("21"), Ok(42));
     /// ```
     fn map<F, U>(self, f: F) -> Map<Self, F>
@@ -51,9 +53,13 @@ pub trait Parser<I> {
     ///
     /// # Example
     /// ```
-    /// let positive = from_str::<i32>.and_then(|n| {
-    ///     if n > 0 { Ok(n) } else { Err("expected positive".into()) }
+    /// # use aoc_lib::utils::parser;
+    /// # use aoc_lib::utils::parser::{Parser, ParseError};
+    /// let positive = parser::from_str::<i32>.and_then(|n| {
+    ///     if n > 0 { Ok(n) } else { Err(ParseError::Other("expected positive".into())) }
     /// });
+    /// assert_eq!(positive.parse("5"), Ok(5));
+    /// assert!(positive.parse("-1").is_err());
     /// ```
     fn and_then<F, U>(self, f: F) -> AndThen<Self, F>
     where
@@ -71,7 +77,9 @@ pub trait Parser<I> {
     ///
     /// # Example
     /// ```
-    /// let p = from_str::<u32>.into_each();
+    /// # use aoc_lib::utils::parser;
+    /// # use aoc_lib::utils::parser::Parser;
+    /// let p = parser::from_str::<u32>.into_each();
     /// assert_eq!(p.parse(vec!["1", "2", "3"]), Ok(vec![1, 2, 3]));
     /// ```
     fn into_each(self) -> IntoEach<Self>
@@ -197,8 +205,9 @@ pub fn unit(_s: &str) -> Result<(), ParseError> {
 ///
 /// # Example
 /// ```
-/// assert_eq!(from_str::<u32>("42"), Ok(42));
-/// assert!(from_str::<u32>("abc").is_err());
+/// # use aoc_lib::utils::parser;
+/// assert_eq!(parser::from_str::<u32>("42"), Ok(42));
+/// assert!(parser::from_str::<u32>("abc").is_err());
 /// ```
 pub fn from_str<T>(s: &str) -> Result<T, ParseError>
 where
@@ -215,9 +224,10 @@ where
 ///
 /// # Example
 /// ```
-/// assert_eq!(digit::<10>('7'), Ok(7));
-/// assert_eq!(digit::<16>('f'), Ok(15));
-/// assert!(digit::<10>('z').is_err());
+/// # use aoc_lib::utils::parser;
+/// assert_eq!(parser::digit::<10>('7'), Ok(7));
+/// assert_eq!(parser::digit::<16>('f'), Ok(15));
+/// assert!(parser::digit::<10>('z').is_err());
 /// ```
 pub fn digit<const RADIX: u32>(c: char) -> Result<u32, ParseError> {
     c.to_digit(RADIX).ok_or(ParseError::NotADigit(c))
@@ -232,7 +242,9 @@ pub fn digit<const RADIX: u32>(c: char) -> Result<u32, ParseError> {
 ///
 /// # Example
 /// ```
-/// let p = split_pair(from_str::<u32>, from_str::<u32>, "-");
+/// # use aoc_lib::utils::parser;
+/// # use aoc_lib::utils::parser::Parser;
+/// let p = parser::split_pair(parser::from_str::<u32>, parser::from_str::<u32>, "-");
 /// assert_eq!(p.parse("10-20"), Ok((10, 20)));
 /// ```
 pub fn split_pair<T, U>(
@@ -261,7 +273,9 @@ pub fn split_pair<T, U>(
 ///
 /// # Example
 /// ```
-/// let p = uncons(digit::<10>, from_str::<u32>);
+/// # use aoc_lib::utils::parser;
+/// # use aoc_lib::utils::parser::Parser;
+/// let p = parser::uncons(parser::digit::<10>, parser::from_str::<u32>);
 /// assert_eq!(p.parse("142"), Ok((1, 42)));
 /// ```
 pub fn uncons<T, U>(
@@ -284,8 +298,10 @@ pub fn uncons<T, U>(
 ///
 /// # Example
 /// ```
-/// let p = rsplit_once(as_str, as_str, "/");
-/// assert_eq!(p.parse("a/b/c"), Ok(("a/b", "c")));
+/// # use aoc_lib::utils::parser;
+/// # use aoc_lib::utils::parser::Parser;
+/// let p = parser::rsplit_once(parser::as_string, parser::as_string, "/");
+/// assert_eq!(p.parse("a/b/c"), Ok(("a/b".to_string(), "c".to_string())));
 /// ```
 pub fn rsplit_once<T, U>(
     body: impl for<'a> Parser<&'a str, Output = T>,

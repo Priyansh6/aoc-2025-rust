@@ -37,7 +37,7 @@ impl Solution for Sol {
 
         for range in ranges {
             if let Some(last) = merged_ranges.last_mut()
-                && last.overlaps_with(&range)
+                && last.overlaps(&range)
             {
                 last.merge(range);
             } else {
