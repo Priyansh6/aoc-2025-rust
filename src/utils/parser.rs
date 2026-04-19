@@ -8,7 +8,7 @@ pub use char_parser::CharParser;
 pub use error::ParseError;
 use std::fmt::Display;
 use std::str::FromStr;
-pub use str_parser::StrParser;
+pub use str_parser::{lsplit_once, rsplit_once, split_pair, uncons, StrParser};
 
 // === Core Trait ===
 
@@ -231,85 +231,4 @@ where
 /// ```
 pub fn digit<const RADIX: u32>(c: char) -> Result<u32, ParseError> {
     c.to_digit(RADIX).ok_or(ParseError::NotADigit(c))
-}
-
-// === Standalone combinators ===
-
-/// Splits a string on `separator` and parses the left and right halves independently.
-///
-/// Expects exactly one occurrence of `separator`, producing a [`ParseError::WrongLength`]
-/// if the split yields any number of parts other than two.
-///
-/// # Example
-/// ```
-/// # use aoc_lib::utils::parser;
-/// # use aoc_lib::utils::parser::Parser;
-/// let p = parser::split_pair(parser::from_str::<u32>, parser::from_str::<u32>, "-");
-/// assert_eq!(p.parse("10-20"), Ok((10, 20)));
-/// ```
-pub fn split_pair<T, U>(
-    left: impl for<'a> Parser<&'a str, Output = T>,
-    right: impl for<'a> Parser<&'a str, Output = U>,
-    separator: &str,
-) -> impl for<'a> Parser<&'a str, Output = (T, U)> {
-    let separator = separator.to_string();
-    move |input: &str| {
-        let elems: Vec<&str> = input.split(&*separator).collect();
-        match elems.as_slice() {
-            [l, r] => Ok((left.parse(l)?, right.parse(r)?)),
-            _ => Err(ParseError::WrongLength {
-                expected: 2,
-                got: elems.len(),
-                input: input.to_string(),
-            }),
-        }
-    }
-}
-
-/// Splits off the first character of the input and parses it and the remainder separately.
-///
-/// The first character is passed to the `first` [`CharParser`]; the rest of the string
-/// slice is passed to `rest`. Returns [`ParseError::EmptyInput`] if the input is empty.
-///
-/// # Example
-/// ```
-/// # use aoc_lib::utils::parser;
-/// # use aoc_lib::utils::parser::Parser;
-/// let p = parser::uncons(parser::digit::<10>, parser::from_str::<u32>);
-/// assert_eq!(p.parse("142"), Ok((1, 42)));
-/// ```
-pub fn uncons<T, U>(
-    first: impl CharParser<Output = T>,
-    rest: impl for<'a> Parser<&'a str, Output = U>,
-) -> impl for<'a> Parser<&'a str, Output = (T, U)> {
-    move |input: &str| {
-        let mut chars = input.chars();
-        let c = chars.next().ok_or(ParseError::EmptyInput)?;
-        let a = first.parse(c)?;
-        let b = rest.parse(chars.as_str())?;
-        Ok((a, b))
-    }
-}
-
-/// Splits a string on the *last* occurrence of `separator`, parsing each part separately.
-///
-/// Everything before the final separator is passed to `body`; the trailing segment is
-/// passed to `last`. Returns [`ParseError::EmptyInput`] if `separator` is not found.
-///
-/// # Example
-/// ```
-/// # use aoc_lib::utils::parser;
-/// # use aoc_lib::utils::parser::Parser;
-/// let p = parser::rsplit_once(parser::as_string, parser::as_string, "/");
-/// assert_eq!(p.parse("a/b/c"), Ok(("a/b".to_string(), "c".to_string())));
-/// ```
-pub fn rsplit_once<T, U>(
-    body: impl for<'a> Parser<&'a str, Output = T>,
-    last: impl for<'a> Parser<&'a str, Output = U>,
-    separator: &str,
-) -> impl for<'a> Parser<&'a str, Output = (T, U)> {
-    move |input: &str| {
-        let (rest, last_line) = input.rsplit_once(separator).ok_or(ParseError::EmptyInput)?;
-        Ok((body.parse(rest)?, last.parse(last_line)?))
-    }
 }

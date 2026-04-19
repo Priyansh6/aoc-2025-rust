@@ -10,6 +10,10 @@ pub enum ParseError {
         got: usize,
         input: String,
     },
+    NotWrapped {
+        open: String,
+        close: String,
+    },
     Other(String),
 }
 
@@ -26,6 +30,9 @@ impl Display for ParseError {
                 input,
             } => {
                 write!(f, "expected {expected} items, got {got} in \"{input}\"")
+            }
+            ParseError::NotWrapped { open, close } => {
+                write!(f, "expected input wrapped in {open} ... {close}")
             }
             ParseError::Other(msg) => write!(f, "{msg}"),
         }
