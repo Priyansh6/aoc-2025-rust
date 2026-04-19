@@ -25,13 +25,13 @@ impl Display for RangeError {
 
 impl Error for RangeError {}
 
-impl Range<u64> {
-    pub fn iter(&self) -> impl Iterator<Item = u64> {
-        self.start..=self.end
+impl<T> Range<T> {
+    pub fn start(&self) -> &T {
+        &self.start
     }
 
-    pub fn num_elems(&self) -> usize {
-        (self.end - self.start + 1) as usize
+    pub fn end(&self) -> &T {
+        &self.end
     }
 }
 
@@ -50,14 +50,6 @@ impl<T: PartialOrd> Range<T> {
         } else {
             Range { start: b, end: a }
         }
-    }
-
-    pub fn start(&self) -> &T {
-        &self.start
-    }
-
-    pub fn end(&self) -> &T {
-        &self.end
     }
 
     pub fn contains(&self, x: &T) -> bool {
@@ -87,6 +79,16 @@ impl<T: Ord + Copy> Range<T> {
         self.start = cmp::min(self.start, range.start);
         self.end = cmp::max(self.end, range.end);
         self
+    }
+}
+
+impl Range<u64> {
+    pub fn iter(&self) -> impl Iterator<Item = u64> {
+        self.start..=self.end
+    }
+
+    pub fn num_elems(&self) -> usize {
+        (self.end - self.start + 1) as usize
     }
 }
 
