@@ -1,7 +1,9 @@
-use crate::char_match;
 use crate::solutions::Solution;
-use crate::utils::parser;
+use crate::utils::algebra::GaussianEliminationGF2Result;
 use crate::utils::parser::{lsplit_once, rsplit_once, CharParser, Parser, StrParser};
+use crate::utils::{algebra, parser};
+use crate::{char_match, utils};
+use itertools::Itertools;
 
 pub struct Sol;
 
@@ -29,7 +31,56 @@ impl Solution for Sol {
     }
 
     fn part1(&self, machines: &Self::Parsed) -> String {
-        todo!()
+        let mut sum_presses = 0;
+        for (indicators, schematics, _) in machines {
+            let num_indicators = indicators.len();
+
+            let mut schematics = schematics
+                .into_iter()
+                .map(|schematic| {
+                    let mut schematic_vector = vec![false; num_indicators];
+                    for &i in schematic {
+                        schematic_vector[i] = true;
+                    }
+                    schematic_vector
+                })
+                .collect_vec();
+            schematics.push(indicators.clone());
+            let matrix = utils::row_to_column_major(schematics);
+
+            let GaussianEliminationGF2Result {
+                matrix,
+                pivot_cols,
+                free_cols,
+            } = algebra::gaussian_elimination_gf2(matrix);
+
+            let aug_col = matrix[0].len() - 1;
+            let num_pivots = pivot_cols.len();
+            let num_free = free_cols.len();
+
+            let min_presses = itertools::repeat_n([false, true], num_free)
+                .multi_cartesian_product()
+                .map(|free_vals| {
+                    let free_presses = free_vals.iter().filter(|&&v| v).count();
+                    let pivot_presses = (0..num_pivots)
+                        .filter(|&pivot| {
+                            free_cols.iter().enumerate().fold(
+                                matrix[pivot][aug_col],
+                                |val, (free_col_i, &free_col)| {
+                                    val ^ (matrix[pivot][free_col] && free_vals[free_col_i])
+                                },
+                            )
+                        })
+                        .count();
+
+                    free_presses + pivot_presses
+                })
+                .min()
+                .unwrap();
+
+            sum_presses += min_presses;
+        }
+        sum_presses.to_string()
     }
 
     fn part2(&self, machines: &Self::Parsed) -> String {
@@ -41,22 +92,17 @@ impl Solution for Sol {
 mod tests {
     use crate::solutions::{check_part1, check_part2};
 
-    const TEST_INPUT: &str = "7,1
-11,1
-11,7
-9,7
-9,5
-2,5
-2,3
-7,3";
+    const TEST_INPUT: &str = "[.##.] (3) (1,3) (2) (2,3) (0,2) (0,1) {3,5,4,7}
+[...#.] (0,2,3,4) (2,3) (0,4) (0,1,2) (1,2,3,4) {7,5,12,7,2}
+[.###.#] (0,1,2,3,4) (0,3,4) (0,1,2,4,5) (1,2) {10,11,11,5,10,5}";
 
     #[test]
     fn test_part1() {
-        check_part1(&crate::solutions::day09::Sol, TEST_INPUT, "50");
+        check_part1(&crate::solutions::day10::Sol, TEST_INPUT, "7");
     }
 
     #[test]
     fn test_part2() {
-        check_part2(&crate::solutions::day09::Sol, TEST_INPUT, "24");
+        check_part2(&crate::solutions::day10::Sol, TEST_INPUT, "24");
     }
 }
