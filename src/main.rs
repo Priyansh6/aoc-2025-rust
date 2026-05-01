@@ -1,4 +1,6 @@
-use aoc_lib::solutions::{day01, day02, day03, day04, day05, day06, day07, day08, day09, Solution};
+use aoc_lib::solutions::{
+    day01, day02, day03, day04, day05, day06, day07, day08, day09, day10, Solution,
+};
 use aoc_lib::utils::parser::Parser;
 use std::fs;
 
@@ -34,5 +36,6 @@ fn main() {
         7 => day07::Sol,
         8 => day08::Sol::<{ day08::NUM_CONNECTIONS_PART_1 }>,
         9 => day09::Sol,
+        10 => day10::Sol,
     );
 }
