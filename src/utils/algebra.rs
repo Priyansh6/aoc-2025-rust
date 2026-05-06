@@ -1,5 +1,5 @@
 pub struct GaussianEliminationGF2Result {
-    pub matrix: Vec<Vec<bool>>,
+    pub reduced_matrix: Vec<Vec<bool>>,
     pub pivot_cols: Vec<usize>,
     pub free_cols: Vec<usize>,
 }
@@ -14,7 +14,7 @@ pub fn gaussian_elimination_gf2(mut matrix: Vec<Vec<bool>>) -> GaussianEliminati
     let nrows = matrix.len();
     if nrows == 0 {
         return GaussianEliminationGF2Result {
-            matrix,
+            reduced_matrix: matrix,
             pivot_cols: vec![],
             free_cols: vec![],
         };
@@ -48,7 +48,7 @@ pub fn gaussian_elimination_gf2(mut matrix: Vec<Vec<bool>>) -> GaussianEliminati
     }
 
     GaussianEliminationGF2Result {
-        matrix,
+        reduced_matrix: matrix,
         pivot_cols,
         free_cols,
     }
