@@ -37,11 +37,11 @@ fn get_possible_presses_for_indicators(
     itertools::repeat_n([false, true], free_cols.len())
         .multi_cartesian_product()
         .map(move |free_vals| {
-            let free_press_cols = free_vals
+            let free_press_cols = free_cols
                 .iter()
-                .zip_eq(&free_cols)
-                .filter(|&(&pressed, _)| pressed)
-                .map(|(_, &free_col)| free_col);
+                .zip_eq(&free_vals)
+                .filter(|&(_, &pressed)| pressed)
+                .map(|(&free_col, _)| free_col);
             let pivot_press_cols = pivot_cols
                 .iter()
                 .enumerate()
