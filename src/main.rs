@@ -9,9 +9,17 @@ macro_rules! run_day {
         match $day {
             $($num => {
                 let s = $sol;
+                let start = std::time::Instant::now();
                 let parsed = s.parser().parse($input).expect("Parse failed");
-                println!("Part 1: {}", s.part1(&parsed));
-                println!("Part 2: {}", s.part2(&parsed));
+                println!("Parse: {:?}", start.elapsed());
+
+                let start = std::time::Instant::now();
+                let result = s.part1(&parsed);
+                println!("Part 1: {} ({:?})", result, start.elapsed());
+
+                let start = std::time::Instant::now();
+                let result = s.part2(&parsed);
+                println!("Part 2: {} ({:?})", result, start.elapsed());
             })+
             _ => panic!("Day {} not implemented", $day),
         }
