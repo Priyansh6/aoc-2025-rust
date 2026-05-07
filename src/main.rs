@@ -3,21 +3,22 @@ use aoc_lib::solutions::{
 };
 use aoc_lib::utils::parser::Parser;
 use std::fs;
+use std::time::Instant;
 
 macro_rules! run_day {
     ($day:expr, $input:expr, $($num:literal => $sol:expr),+ $(,)?) => {
         match $day {
             $($num => {
                 let s = $sol;
-                let start = std::time::Instant::now();
+                let start = Instant::now();
                 let parsed = s.parser().parse($input).expect("Parse failed");
                 println!("Parse: {:?}", start.elapsed());
 
-                let start = std::time::Instant::now();
+                let start = Instant::now();
                 let result = s.part1(&parsed);
                 println!("Part 1: {} ({:?})", result, start.elapsed());
 
-                let start = std::time::Instant::now();
+                let start = Instant::now();
                 let result = s.part2(&parsed);
                 println!("Part 2: {} ({:?})", result, start.elapsed());
             })+
